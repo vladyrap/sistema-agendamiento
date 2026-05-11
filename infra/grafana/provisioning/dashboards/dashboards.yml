@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: Agendamiento
+    type: file
+    folder: Agendamiento
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

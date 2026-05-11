@@ -1,0 +1,66 @@
+# ─── Secretos ───────────────────────────────────────────────────────────
+.env
+.env.local
+.env.prod
+.env.*.local
+**/.env
+!.env.example
+!.env.prod.example
+!**/.env.example
+
+# ─── Node / frontend ────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+.vite/
+*.local
+
+# ─── Python / backend ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ─── IDE / editor ───────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Claude Code / herramientas ─────────────────────────────────────────
+.claude/
+memory/
+
+# ─── Logs ───────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Tarballs / artefactos ──────────────────────────────────────────────
+*.tar.gz
+*.tar
+*.zip
+agendamiento.tar.gz
+
+# ─── Backups, uploads, datos persistentes ───────────────────────────────
+uploads/
+backups/
+*.sql.gz.enc
+*.dump
+*.sql
+
+# ─── Postgres / Redis volumenes locales (si alguien los crea) ───────────
+postgres_data/
+redis_data/

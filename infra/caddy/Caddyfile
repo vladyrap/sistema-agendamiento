@@ -1,0 +1,26 @@
+# Caddy config — auto-HTTPS when DOMAIN is a real hostname,
+# or plain HTTP on :80 when DOMAIN=:80 (IP-only access).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode gzip zstd
+
+	# /metrics is internal-only — Prometheus scrapes via the docker network.
+	handle /metrics* {
+		respond 404
+	}
+
+	# Everything else is the SPA (the frontend's nginx forwards /api/ → backend).
+	reverse_proxy frontend:80
+
+	# Basic security headers.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
