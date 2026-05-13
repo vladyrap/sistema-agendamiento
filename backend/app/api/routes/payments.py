@@ -93,12 +93,24 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
             appointment.cancellation_reason = "Pago rechazado"
             db.commit()
 
-    # Notificación al paciente cuando aprueba
+    # Notificación al paciente + a todos los admins cuando se aprueba un pago
     if new_status == PaymentStatus.approved:
         try:
             from app.api.routes.appointments import _load_appointment, _notification_payload
+            from app.models.user import User as UserModel, UserRole
             loaded = _load_appointment(db, appointment.id)
-            enqueue("payment_approved", _notification_payload(loaded))
+            # Paciente
+            enqueue("payment_approved", _notification_payload(loaded, recipient="patient"))
+            # Admins
+            admins = db.query(UserModel).filter(UserModel.role == UserRole.admin, UserModel.is_active == True).all()
+            for admin in admins:
+                payload = _notification_payload(loaded, recipient="patient")
+                payload["recipient_role"] = "admin"
+                payload["to_email"] = admin.email
+                payload["to_phone"] = admin.phone
+                payload["to_name"] = f"{admin.first_name} {admin.last_name}"
+                payload["amount"] = payment.amount
+                enqueue("payment_approved", payload)
         except Exception:
             logger.exception("payments.notify_failed")
 

@@ -6,6 +6,7 @@ from app.models.user import User
 from app.models.user import UserRole
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest
 from app.api.deps import get_current_user
+from app.services.notifications import enqueue
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -28,6 +29,21 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Avisar a admins del nuevo registro
+    admins = db.query(User).filter(User.role == UserRole.admin, User.is_active == True).all()
+    for admin in admins:
+        enqueue("user_registered", {
+            "recipient_role": "admin",
+            "to_email": admin.email,
+            "to_phone": admin.phone,
+            "to_name": f"{admin.first_name} {admin.last_name}",
+            "new_user_name": f"{user.first_name} {user.last_name}",
+            "new_user_email": user.email,
+            "new_user_rut": user.rut or "",
+            "new_user_role": user.role.value,
+        })
+
     return user
 
 

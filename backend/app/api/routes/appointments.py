@@ -71,31 +71,69 @@ def _notify_waitlist(db: Session, doctor_id: int, freed_date) -> None:
     entry.notified_at = datetime.utcnow()
     db.commit()
     enqueue("waitlist_slot_available", {
-        "patient_email": entry.patient.email if entry.patient else None,
-        "patient_phone": entry.patient.phone if entry.patient else None,
-        "patient_name": f"{entry.patient.first_name} {entry.patient.last_name}" if entry.patient else "",
+        "recipient_role": "patient",
+        "to_email": entry.patient.email if entry.patient else None,
+        "to_phone": entry.patient.phone if entry.patient else None,
+        "to_name": f"{entry.patient.first_name} {entry.patient.last_name}" if entry.patient else "",
+        "counterpart_name": (
+            f"Dr(a). {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
+            if entry.doctor and entry.doctor.user else ""
+        ),
         "doctor_name": (
             f"Dr(a). {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
             if entry.doctor and entry.doctor.user else ""
         ),
+        "patient_name": f"{entry.patient.first_name} {entry.patient.last_name}" if entry.patient else "",
         "appointment_date": str(freed_date),
         "start_time": "",
     })
 
 
-def _notification_payload(appt: Appointment) -> dict:
+def _notification_payload(appt: Appointment, recipient: str = "patient") -> dict:
+    """Construye el payload de notificación para un evento de cita.
+
+    recipient: 'patient' o 'doctor'. Define a quién va dirigida la notificación.
+    El template del worker decide el copy según `recipient_role`.
+    """
+    patient_name = f"{appt.patient.first_name} {appt.patient.last_name}" if appt.patient else ""
+    doctor_name = (
+        f"Dr(a). {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
+        if appt.doctor and appt.doctor.user else ""
+    )
+
+    if recipient == "doctor" and appt.doctor and appt.doctor.user:
+        to_email = appt.doctor.user.email
+        to_phone = appt.doctor.user.phone
+        to_name = doctor_name
+        counterpart = patient_name
+    else:
+        to_email = appt.patient.email if appt.patient else None
+        to_phone = appt.patient.phone if appt.patient else None
+        to_name = patient_name
+        counterpart = doctor_name
+
     return {
         "appointment_id": appt.id,
-        "patient_email": appt.patient.email if appt.patient else None,
-        "patient_phone": appt.patient.phone if appt.patient else None,
-        "patient_name": f"{appt.patient.first_name} {appt.patient.last_name}" if appt.patient else "",
-        "doctor_name": (
-            f"Dr(a). {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
-            if appt.doctor and appt.doctor.user else ""
-        ),
+        "recipient_role": "doctor" if recipient == "doctor" else "patient",
+        "to_email": to_email,
+        "to_phone": to_phone,
+        "to_name": to_name,
+        "counterpart_name": counterpart,
+        "doctor_name": doctor_name,
+        "patient_name": patient_name,
         "appointment_date": str(appt.appointment_date),
         "start_time": str(appt.start_time),
+        "modality": appt.modality,
     }
+
+
+def _enqueue_for_both(event_type: str, appt: Appointment, **extra) -> None:
+    """Encola la notificación tanto para el paciente como para el médico."""
+    for role in ("patient", "doctor"):
+        payload = _notification_payload(appt, recipient=role)
+        if extra:
+            payload.update(extra)
+        enqueue(event_type, payload)
 
 
 def _latest_payment_status(appt: Appointment) -> Optional[str]:
@@ -226,7 +264,7 @@ def create_appointment(
             for e, d in extras_created:
                 cache_delete_pattern(f"slots:doctor:{doctor.id}:{d}")
                 loaded_e = _load_appointment(db, e.id)
-                enqueue("appointment_created", _notification_payload(loaded_e))
+                _enqueue_for_both("appointment_created", loaded_e)
 
     loaded = _load_appointment(db, appt.id)
     appointments_created.labels(specialty=loaded.doctor.specialty.name).inc()
@@ -259,8 +297,8 @@ def create_appointment(
             db.commit()
             payment_status = PaymentStatus.pending.value
 
-    # ── Notificación ──────────────────────────────────────────────────────
-    enqueue("appointment_created", _notification_payload(loaded))
+    # ── Notificación a paciente + doctor ──────────────────────────────────
+    _enqueue_for_both("appointment_created", loaded)
 
     # Re-cargar para incluir el payment recién creado
     loaded = _load_appointment(db, appt.id)
@@ -347,9 +385,7 @@ def cancel_appointment(
 
     loaded = _load_appointment(db, appointment_id)
     appointments_cancelled.labels(actor=current_user.role.value).inc()
-    payload = _notification_payload(loaded)
-    payload["reason"] = data.cancellation_reason or "no especificado"
-    enqueue("appointment_cancelled", payload)
+    _enqueue_for_both("appointment_cancelled", loaded, reason=data.cancellation_reason or "no especificado")
 
     _notify_waitlist(db, appt.doctor_id, appt.appointment_date)
 
@@ -419,10 +455,7 @@ def reschedule_appointment(
     cache_delete_pattern(f"slots:doctor:{doctor.id}:{data.appointment_date}")
 
     loaded = _load_appointment(db, appointment_id)
-    payload = _notification_payload(loaded)
-    payload["old_date"] = str(old_date)
-    payload["old_start"] = str(old_start)
-    enqueue("appointment_rescheduled", payload)
+    _enqueue_for_both("appointment_rescheduled", loaded, old_date=str(old_date), old_start=str(old_start))
 
     response = AppointmentResponse.model_validate(loaded, from_attributes=True)
     response.payment_status = _latest_payment_status(loaded)
@@ -447,7 +480,7 @@ def confirm_appointment(
 
     loaded = _load_appointment(db, appointment_id)
     appointments_confirmed.inc()
-    enqueue("appointment_confirmed", _notification_payload(loaded))
+    _enqueue_for_both("appointment_confirmed", loaded)
     response = AppointmentResponse.model_validate(loaded, from_attributes=True)
     response.payment_status = _latest_payment_status(loaded)
     return response
@@ -513,9 +546,7 @@ def cancel_day(
         cache_delete_pattern(f"slots:doctor:{doctor.id}:{data.date}")
         for a in appts:
             loaded = _load_appointment(db, a.id)
-            payload = _notification_payload(loaded)
-            payload["reason"] = a.cancellation_reason
-            enqueue("appointment_cancelled", payload)
+            _enqueue_for_both("appointment_cancelled", loaded, reason=a.cancellation_reason)
             appointments_cancelled.labels(actor=current_user.role.value).inc()
         # Notificar lista de espera
         _notify_waitlist(db, doctor.id, data.date)

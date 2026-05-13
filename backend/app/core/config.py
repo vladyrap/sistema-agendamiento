@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_FROM_NUMBER: Optional[str] = None
 
+    # Gemini (Google AI Studio) — vacío = chat agente deshabilitado.
+    GEMINI_API_KEY: Optional[str] = None
+
     # Adjuntos de ficha clínica
     UPLOAD_DIR: str = "/app/uploads"
     UPLOAD_MAX_BYTES: int = 20 * 1024 * 1024  # 20 MB

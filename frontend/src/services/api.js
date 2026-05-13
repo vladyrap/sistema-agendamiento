@@ -27,6 +27,11 @@ export const authApi = {
   updateMe: (data) => api.put('/auth/me', data),
 }
 
+export const chatApi = {
+  status:  ()                 => api.get('/chat/status'),
+  send:    (message, history) => api.post('/chat/message', { message, history }),
+}
+
 export const specialtiesApi = {
   list:    ()         => api.get('/specialties/'),
   get:     (id)       => api.get(`/specialties/${id}`),

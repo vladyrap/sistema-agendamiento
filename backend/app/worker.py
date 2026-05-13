@@ -2,6 +2,17 @@
 y dispara recordatorios de citas 24h antes.
 
 Run with:  python -m app.worker
+
+Cada item en la cola es un evento con esta forma:
+    {
+      "type": "appointment_created" | "appointment_cancelled" | ... ,
+      "payload": {
+        "recipient_role": "patient" | "doctor" | "admin",
+        "to_email": "...", "to_phone": "...", "to_name": "...",
+        "counterpart_name": "...",  # el otro lado de la cita
+        ...campos del evento
+      }
+    }
 """
 import json
 import logging
@@ -26,80 +37,183 @@ from app.services.sms import send_sms
 
 logger = logging.getLogger(__name__)
 
-# Por defecto las citas están en hora de Chile (los datos del seed lo asumen).
-APP_TZ = ZoneInfo(settings.__dict__.get("APP_TIMEZONE", "America/Santiago") if False else "America/Santiago")
+APP_TZ = ZoneInfo("America/Santiago")
+
+
+def _safe(payload: Dict[str, Any], key: str, default: str = "") -> str:
+    val = payload.get(key)
+    return val if val is not None else default
 
 
 def _render_email(event_type: str, payload: Dict[str, Any]) -> tuple[str, str]:
-    doctor = payload.get("doctor_name", "el especialista")
-    date = payload.get("appointment_date", "")
-    time_ = payload.get("start_time", "")
-    name = payload.get("patient_name", "")
+    """Devuelve (asunto, cuerpo) según el evento y rol del destinatario."""
+    role = payload.get("recipient_role", "patient")
+    to_name_first = (_safe(payload, "to_name").split(" ") or [""])[0]
+    counterpart = _safe(payload, "counterpart_name")
+    date = _safe(payload, "appointment_date")
+    time_ = _safe(payload, "start_time")[:5]
+    modality = _safe(payload, "modality")
+    is_online = modality == "online"
 
+    # ── Eventos de cita ──
     if event_type == "appointment_created":
-        subject = f"Cita agendada para el {date}"
-        body = (
-            f"Hola {name},\n\n"
-            f"Tu cita con {doctor} ha sido agendada para el {date} a las {time_}.\n"
-            "Te enviaremos un recordatorio 24 horas antes.\n\n— Sistema de Agendamiento Clínico"
-        )
-    elif event_type == "appointment_cancelled":
-        subject = f"Cita cancelada — {date}"
-        body = (
-            f"Hola {name},\n\nTu cita con {doctor} del {date} a las {time_} ha sido cancelada.\n"
-            f"Motivo: {payload.get('reason', 'no especificado')}.\n\n— Sistema de Agendamiento Clínico"
-        )
-    elif event_type == "appointment_confirmed":
-        subject = f"Cita confirmada — {date}"
-        body = f"Hola {name},\n\n{doctor} confirmó tu cita del {date} a las {time_}.\n\n— Sistema de Agendamiento Clínico"
-    elif event_type == "appointment_reminder":
-        subject = f"Recordatorio: tu cita es mañana ({date})"
-        body = (
-            f"Hola {name},\n\nTe recordamos tu cita con {doctor} mañana {date} a las {time_}.\n"
-            f"{'Recibirás el link de la videollamada en la pantalla de la cita 15 min antes.' if payload.get('modality') == 'online' else ''}\n\n"
-            "— Sistema de Agendamiento Clínico"
-        )
-    elif event_type == "appointment_rescheduled":
-        subject = f"Cita reagendada para el {date}"
-        body = (
-            f"Hola {name},\n\nTu cita con {doctor} se movió al {date} a las {time_}.\n\n— Sistema de Agendamiento Clínico"
-        )
-    elif event_type == "payment_approved":
-        subject = f"Pago confirmado — {date}"
-        body = f"Hola {name},\n\nRecibimos tu pago. Cita con {doctor} el {date} a las {time_} confirmada.\n\n— Sistema de Agendamiento Clínico"
-    elif event_type == "waitlist_slot_available":
-        subject = f"Se liberó un cupo con {doctor}"
-        body = (
-            f"Hola {name},\n\nSe liberó un cupo con {doctor} el {date}. "
-            "Reserva ahora antes de que otra persona lo tome.\n\n— Sistema de Agendamiento Clínico"
-        )
-    else:
-        subject = f"Notificación: {event_type}"
-        body = json.dumps(payload, indent=2, default=str)
+        if role == "doctor":
+            subject = f"Nueva cita agendada — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Tienes una nueva cita con {counterpart} el {date} a las {time_}.\n"
+                f"{'Modalidad: videollamada.' if is_online else 'Modalidad: presencial.'}\n\n"
+                "Puedes revisar el detalle en tu agenda.\n\n— Calmar Agendamiento"
+            )
+        else:
+            subject = f"Cita agendada para el {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Tu cita con {counterpart} ha sido agendada para el {date} a las {time_}.\n"
+                f"{'Recibirás el link de la videollamada 15 min antes.' if is_online else ''}\n"
+                "Te enviaremos un recordatorio 24h antes.\n\n— Calmar Agendamiento"
+            )
+        return subject, body
 
-    return subject, body
+    if event_type == "appointment_cancelled":
+        reason = _safe(payload, "reason", "no especificado")
+        if role == "doctor":
+            subject = f"Cita cancelada — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"La cita con {counterpart} del {date} a las {time_} fue cancelada.\n"
+                f"Motivo: {reason}.\n\n— Calmar Agendamiento"
+            )
+        else:
+            subject = f"Cita cancelada — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Tu cita con {counterpart} del {date} a las {time_} fue cancelada.\n"
+                f"Motivo: {reason}.\n\n— Calmar Agendamiento"
+            )
+        return subject, body
+
+    if event_type == "appointment_confirmed":
+        if role == "doctor":
+            subject = f"Confirmaste una cita — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Confirmaste la cita con {counterpart} del {date} a las {time_}.\n\n— Calmar Agendamiento"
+            )
+        else:
+            subject = f"Cita confirmada — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"{counterpart} confirmó tu cita del {date} a las {time_}. ¡Te esperamos!\n\n— Calmar Agendamiento"
+            )
+        return subject, body
+
+    if event_type == "appointment_rescheduled":
+        old_date = _safe(payload, "old_date")
+        old_start = _safe(payload, "old_start", "")[:5]
+        if role == "doctor":
+            subject = f"Cita reagendada — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"La cita con {counterpart} se movió:\n"
+                f"  De: {old_date} {old_start}\n"
+                f"  A:  {date} {time_}\n\n— Calmar Agendamiento"
+            )
+        else:
+            subject = f"Cita reagendada para el {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Tu cita con {counterpart} se movió al {date} a las {time_}.\n\n— Calmar Agendamiento"
+            )
+        return subject, body
+
+    if event_type == "appointment_reminder":
+        if role == "doctor":
+            subject = f"Mañana: cita con {counterpart}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Recordatorio: mañana {date} a las {time_} tienes cita con {counterpart}.\n\n— Calmar Agendamiento"
+            )
+        else:
+            subject = f"Recordatorio: tu cita es mañana ({date})"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Te recordamos tu cita con {counterpart} mañana {date} a las {time_}.\n"
+                f"{'Recibirás el link de la videollamada en la pantalla de la cita 15 min antes.' if is_online else ''}\n\n— Calmar Agendamiento"
+            )
+        return subject, body
+
+    if event_type == "payment_approved":
+        if role == "admin":
+            amount = payload.get("amount", 0)
+            subject = f"Nuevo pago recibido — ${amount:,}".replace(",", ".")
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Se recibió un pago de ${amount:,} pesos por la cita del {date} a las {time_}.\n"
+                f"Paciente: {_safe(payload, 'patient_name')}\n"
+                f"Profesional: {_safe(payload, 'doctor_name')}\n\n— Calmar Agendamiento"
+            ).replace(",", ".")
+        else:
+            subject = f"Pago confirmado — {date}"
+            body = (
+                f"Hola {to_name_first},\n\n"
+                f"Recibimos tu pago. Tu cita con {counterpart} del {date} a las {time_} está confirmada.\n\n— Calmar Agendamiento"
+            )
+        return subject, body
+
+    if event_type == "waitlist_slot_available":
+        subject = f"Se liberó un cupo con {counterpart}"
+        body = (
+            f"Hola {to_name_first},\n\n"
+            f"Se liberó un cupo con {counterpart} el {date}. Reserva ahora antes de que otra persona lo tome.\n\n— Calmar Agendamiento"
+        )
+        return subject, body
+
+    # ── Eventos administrativos ──
+    if event_type == "user_registered":
+        new_user = _safe(payload, "new_user_name")
+        subject = f"Nuevo registro: {new_user}"
+        body = (
+            f"Hola {to_name_first},\n\n"
+            f"Se registró un nuevo {_safe(payload, 'new_user_role', 'paciente')} en la plataforma:\n"
+            f"  Nombre: {new_user}\n"
+            f"  Email: {_safe(payload, 'new_user_email')}\n"
+            f"  RUT: {_safe(payload, 'new_user_rut') or '—'}\n\n— Calmar Agendamiento"
+        )
+        return subject, body
+
+    # Fallback
+    return f"Notificación: {event_type}", json.dumps(payload, indent=2, default=str)
 
 
 def _render_sms(event_type: str, payload: Dict[str, Any]) -> str:
-    doctor = payload.get("doctor_name", "el especialista")
-    date = payload.get("appointment_date", "")
-    time_ = payload.get("start_time", "")
-    name = (payload.get("patient_name") or "").split(" ")[0]
+    """SMS ultra corto."""
+    role = payload.get("recipient_role", "patient")
+    first = (_safe(payload, "to_name").split(" ") or [""])[0]
+    counterpart = _safe(payload, "counterpart_name")
+    date = _safe(payload, "appointment_date")
+    time_ = _safe(payload, "start_time")[:5]
 
     if event_type == "appointment_created":
-        return f"Hola {name}, tu cita con {doctor} fue agendada para el {date} a las {time_}."
+        if role == "doctor":
+            return f"Nueva cita con {counterpart} el {date} a las {time_}."
+        return f"Hola {first}, tu cita con {counterpart} fue agendada para el {date} a las {time_}."
     if event_type == "appointment_cancelled":
-        return f"Hola {name}, tu cita con {doctor} del {date} a las {time_} fue cancelada."
+        return f"Cita con {counterpart} del {date} a las {time_} fue cancelada."
     if event_type == "appointment_confirmed":
-        return f"Hola {name}, {doctor} confirmó tu cita del {date} a las {time_}."
-    if event_type == "appointment_reminder":
-        return f"Recordatorio: tu cita con {doctor} es mañana {date} a las {time_}."
+        return f"{counterpart} confirmó la cita del {date} a las {time_}."
     if event_type == "appointment_rescheduled":
-        return f"Hola {name}, tu cita con {doctor} fue movida al {date} a las {time_}."
+        return f"Cita con {counterpart} movida al {date} {time_}."
+    if event_type == "appointment_reminder":
+        return f"Recordatorio: cita con {counterpart} mañana {date} {time_}."
     if event_type == "payment_approved":
-        return f"Hola {name}, recibimos tu pago. Cita del {date} a las {time_} confirmada."
+        if role == "admin":
+            return f"Pago recibido: {_safe(payload, 'patient_name')} — cita {date}."
+        return f"Hola {first}, recibimos tu pago. Cita del {date} a las {time_} confirmada."
     if event_type == "waitlist_slot_available":
-        return f"Hola {name}, se liberó un cupo con {doctor} el {date}. Reserva ahora."
+        return f"Hola {first}, se liberó un cupo con {counterpart} el {date}. Reserva ahora."
+    if event_type == "user_registered":
+        return f"Nuevo registro en Calmar: {_safe(payload, 'new_user_name')}."
     return f"Notificación: {event_type}"
 
 
@@ -138,8 +252,18 @@ def _handle(raw: str) -> None:
 
     event_type = event.get("type", "unknown")
     payload = event.get("payload", {})
-    email = payload.get("patient_email")
-    phone = payload.get("patient_phone")
+
+    # Compat: si llega con formato viejo (patient_email/patient_phone/patient_name)
+    # lo traducimos al nuevo on-the-fly.
+    if "to_email" not in payload and "patient_email" in payload:
+        payload.setdefault("recipient_role", "patient")
+        payload.setdefault("to_email", payload.get("patient_email"))
+        payload.setdefault("to_phone", payload.get("patient_phone"))
+        payload.setdefault("to_name", payload.get("patient_name", ""))
+        payload.setdefault("counterpart_name", payload.get("doctor_name", ""))
+
+    email = payload.get("to_email")
+    phone = payload.get("to_phone")
 
     any_sent = False
     if email:
@@ -161,40 +285,67 @@ def _handle(raw: str) -> None:
 
 # ─── Reminders 24h antes ─────────────────────────────────────────────────────
 def reminders_job():
-    """Encola recordatorios para citas que ocurren ~24h en el futuro y no han sido reminded."""
+    """Encola recordatorios para paciente y doctor cuando una cita ocurre ~24h en el futuro."""
     db = SessionLocal()
     try:
+        from sqlalchemy.orm import joinedload, selectinload
         now_local = datetime.now(APP_TZ).replace(tzinfo=None)
         target_min = now_local + timedelta(hours=23, minutes=30)
         target_max = now_local + timedelta(hours=24, minutes=30)
 
-        # Traemos candidatos del día/dos días siguientes y filtramos en Python.
-        upcoming = db.query(Appointment).filter(
-            Appointment.status.in_([AppointmentStatus.scheduled, AppointmentStatus.confirmed]),
-            Appointment.reminder_sent == False,  # noqa: E712
-            Appointment.appointment_date >= now_local.date(),
-            Appointment.appointment_date <= (now_local + timedelta(days=2)).date(),
-        ).all()
+        upcoming = (
+            db.query(Appointment)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor).joinedload(Doctor.user),
+            )
+            .filter(
+                Appointment.status.in_([AppointmentStatus.scheduled, AppointmentStatus.confirmed]),
+                Appointment.reminder_sent == False,  # noqa: E712
+                Appointment.appointment_date >= now_local.date(),
+                Appointment.appointment_date <= (now_local + timedelta(days=2)).date(),
+            )
+            .all()
+        )
 
         sent = 0
         for a in upcoming:
             appt_dt = datetime.combine(a.appointment_date, a.start_time)
             if not (target_min <= appt_dt <= target_max):
                 continue
-            payload = {
+            patient_name = f"{a.patient.first_name} {a.patient.last_name}" if a.patient else ""
+            doctor_name = (
+                f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+                if a.doctor and a.doctor.user else ""
+            )
+            common = {
                 "appointment_id": a.id,
-                "patient_email": a.patient.email if a.patient else None,
-                "patient_phone": a.patient.phone if a.patient else None,
-                "patient_name": f"{a.patient.first_name} {a.patient.last_name}" if a.patient else "",
-                "doctor_name": (
-                    f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
-                    if a.doctor and a.doctor.user else ""
-                ),
                 "appointment_date": str(a.appointment_date),
                 "start_time": str(a.start_time),
                 "modality": a.modality,
+                "patient_name": patient_name,
+                "doctor_name": doctor_name,
             }
-            enqueue("appointment_reminder", payload)
+            # Paciente
+            if a.patient and a.patient.email:
+                enqueue("appointment_reminder", {
+                    **common,
+                    "recipient_role": "patient",
+                    "to_email": a.patient.email,
+                    "to_phone": a.patient.phone,
+                    "to_name": patient_name,
+                    "counterpart_name": doctor_name,
+                })
+            # Doctor
+            if a.doctor and a.doctor.user and a.doctor.user.email:
+                enqueue("appointment_reminder", {
+                    **common,
+                    "recipient_role": "doctor",
+                    "to_email": a.doctor.user.email,
+                    "to_phone": a.doctor.user.phone,
+                    "to_name": doctor_name,
+                    "counterpart_name": patient_name,
+                })
             a.reminder_sent = True
             sent += 1
         if sent:

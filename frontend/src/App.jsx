@@ -37,6 +37,7 @@ import ReceptionPatients from './pages/reception/ReceptionPatients'
 
 import MeetingRoom from './pages/teleconsulta/MeetingRoom'
 import PatientFullProfile from './pages/shared/PatientFullProfile'
+import ChatWidget from './components/ChatWidget'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -122,6 +123,7 @@ export default function App() {
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
       </Routes>
+      <ChatWidget />
     </AuthProvider>
   )
 }
