@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Save, X, Shield, Bell, Eye, AlertTriangle } from 'lucide-react'
+import { Save, X, Shield, Bell, Eye, AlertTriangle, Search, Link2, UserPlus, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { tutorsApi } from '../../services/api'
 import { Input, Label } from '../../components/ui/Input'
@@ -69,7 +69,62 @@ export default function TutorForm({ patientId, tutor = null, onSaved, onCancel }
   })
   const [saving, setSaving] = useState(false)
 
-  function update(k, v) { setData((d) => ({ ...d, [k]: v })) }
+  // ─── Buscador de tutores ya registrados (solo al crear, no al editar) ───
+  const [searchQ, setSearchQ] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [linkedUserId, setLinkedUserId] = useState(null) // si el form se rellenó desde un user existente
+  const searchTimer = useRef(null)
+  const searchBoxRef = useRef(null)
+
+  useEffect(() => {
+    if (isEdit) return // al editar, no mostramos buscador
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      tutorsApi.searchUsers(searchQ)
+        .then((r) => setSearchResults(r.data))
+        .catch(() => setSearchResults([]))
+    }, 250)
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+  }, [searchQ, isEdit])
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  function pickExistingUser(u) {
+    // Auto-rellenar el form con los datos del tutor registrado
+    setData((d) => ({
+      ...d,
+      name: u.name,
+      email: u.email,
+      phone: u.phone || d.phone,
+      rut: u.rut || d.rut,
+    }))
+    setLinkedUserId(u.id)
+    setSearchOpen(false)
+    setSearchQ('')
+    toast.success(`${u.name} seleccionado — se vinculará automáticamente`)
+  }
+
+  function clearLinkedUser() {
+    setLinkedUserId(null)
+    setData((d) => ({ ...d, name: '', email: '', phone: '', rut: '' }))
+  }
+
+  function update(k, v) {
+    setData((d) => ({ ...d, [k]: v }))
+    // Si edita manualmente el email tras vincular, desvincular el indicador
+    if (linkedUserId && k === 'email') {
+      setLinkedUserId(null)
+    }
+  }
 
   async function submit() {
     if (!data.name.trim()) {

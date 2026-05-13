@@ -43,6 +43,8 @@ export const tutorsApi = {
   myPatients:    ()                        => api.get('/tutors/me/patients'),
   // Doctor cruzada
   doctorTutors:  ()                        => api.get('/tutors/doctor/me'),
+  // Buscar usuarios tutores ya registrados (autocompletar)
+  searchUsers:   (q)                       => api.get('/tutors/search-users', { params: { q } }),
 }
 
 export const myPatientsApi = {

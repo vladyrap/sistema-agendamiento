@@ -274,6 +274,44 @@ def alert_tutor(
     return {"queued": True}
 
 
+@router.get("/search-users")
+def search_tutor_users(
+    q: str = "",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Busca usuarios con rol=tutor para autocompletar al agregar tutor a un paciente.
+
+    Solo staff (doctor/admin/recepcion) puede buscar — los pacientes deberían
+    agregar al tutor por email directamente (privacidad).
+    """
+    if current_user.role not in (UserRole.doctor, UserRole.admin, UserRole.receptionist):
+        raise HTTPException(status_code=403, detail="Sin permiso")
+    from sqlalchemy import or_
+    query = db.query(User).filter(User.role == UserRole.tutor, User.is_active == True)
+    q = (q or "").strip()
+    if q:
+        like = f"%{q}%"
+        query = query.filter(or_(
+            User.first_name.ilike(like),
+            User.last_name.ilike(like),
+            User.email.ilike(like),
+            User.rut.ilike(like),
+            User.phone.ilike(like),
+        ))
+    rows = query.order_by(User.first_name.asc()).limit(20).all()
+    return [
+        {
+            "id": u.id,
+            "name": f"{u.first_name} {u.last_name}",
+            "email": u.email,
+            "phone": u.phone,
+            "rut": u.rut,
+        }
+        for u in rows
+    ]
+
+
 @router.get("/doctor/me", response_model=List[DoctorTutorItem])
 def doctor_tutors(
     db: Session = Depends(get_db),
