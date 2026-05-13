@@ -83,6 +83,42 @@ try:
         )
         db.add(patient)
 
+    if not db.query(User).filter(User.email == "tutor@ejemplo.cl").first():
+        tutor_user = User(
+            email="tutor@ejemplo.cl",
+            password_hash=get_password_hash("tutor123"),
+            first_name="Marta",
+            last_name="Pérez",
+            phone="+56 9 5555 9876",
+            rut="11223344-5",
+            role=UserRole.tutor,
+        )
+        db.add(tutor_user)
+        db.flush()
+
+        # Vincular como tutora del paciente seed
+        from app.models.tutor import TutorRelationship
+        patient_user = db.query(User).filter(User.email == "paciente@ejemplo.cl").first()
+        if patient_user and not db.query(TutorRelationship).filter(
+            TutorRelationship.patient_id == patient_user.id,
+            TutorRelationship.tutor_user_id == tutor_user.id,
+        ).first():
+            rel = TutorRelationship(
+                patient_id=patient_user.id,
+                tutor_user_id=tutor_user.id,
+                name=f"{tutor_user.first_name} {tutor_user.last_name}",
+                relationship_label="Madre",
+                email=tutor_user.email,
+                phone=tutor_user.phone,
+                rut=tutor_user.rut,
+                is_legal_guardian=True,
+                notify_on_crisis=True,
+                notify_on_appointments=True,
+                can_view_full_profile=True,
+                notes="Tutor seed para pruebas.",
+            )
+            db.add(rel)
+
     if not db.query(User).filter(User.email == "dr.garcia@clinica.cl").first():
         doctor_user = User(
             email="dr.garcia@clinica.cl",
@@ -124,5 +160,6 @@ try:
     print("  Médico:       dr.garcia@clinica.cl / doctor123")
     print("  Recepción:    recepcion@clinica.cl / recepcion123")
     print("  Paciente:     paciente@ejemplo.cl / paciente123")
+    print("  Tutor:        tutor@ejemplo.cl / tutor123")
 finally:
     db.close()

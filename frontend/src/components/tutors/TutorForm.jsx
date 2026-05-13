@@ -175,6 +175,88 @@ export default function TutorForm({ patientId, tutor = null, onSaved, onCancel }
         </button>
       </div>
 
+      {/* Buscador de tutores ya registrados (solo al crear) */}
+      {!isEdit && (
+        <div ref={searchBoxRef} className="relative">
+          <Label>¿Tutor ya registrado en Calmar?</Label>
+          {linkedUserId ? (
+            <div className="flex items-center gap-2 rounded-xl bg-wellness-50 border border-wellness-200 px-3 py-2.5">
+              <Link2 className="w-4 h-4 text-wellness-700 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-wellness-800 truncate">
+                  Vinculado: {data.name}
+                </div>
+                <div className="text-[11px] text-wellness-700 truncate">
+                  {data.email} · Se vinculará automáticamente al guardar
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={clearLinkedUser}
+                className="text-xs text-wellness-700 hover:text-wellness-900 font-semibold px-2 py-1"
+              >
+                Desvincular
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="relative">
+                <Input
+                  leftIcon={Search}
+                  value={searchQ}
+                  onChange={(e) => { setSearchQ(e.target.value); setSearchOpen(true) }}
+                  onFocus={() => setSearchOpen(true)}
+                  placeholder="Buscar por nombre, email, RUT…"
+                />
+                <ChevronDown
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none"
+                />
+              </div>
+              {searchOpen && (
+                <div className="absolute z-20 left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-xl bg-white border border-ink-200 shadow-soft-lg">
+                  {searchResults.length === 0 ? (
+                    <div className="px-3.5 py-3 text-sm text-ink-500 flex items-start gap-2">
+                      <UserPlus className="w-4 h-4 text-ink-400 mt-0.5" />
+                      <div>
+                        {searchQ.trim()
+                          ? <>Sin coincidencias. <strong>Completá los datos abajo</strong> para agregarlo como tutor (todavía sin cuenta).</>
+                          : 'Escribí para buscar tutores ya registrados.'}
+                      </div>
+                    </div>
+                  ) : (
+                    <ul className="py-1">
+                      {searchResults.map((u) => (
+                        <li key={u.id}>
+                          <button
+                            type="button"
+                            onClick={() => pickExistingUser(u)}
+                            className="w-full text-left px-3.5 py-2 hover:bg-brand-50 flex items-center gap-3 group"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-semibold text-xs flex items-center justify-center shrink-0">
+                              {u.name.split(' ').map((s) => s[0]).slice(0, 2).join('').toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-ink-900 truncate group-hover:text-brand-800">{u.name}</div>
+                              <div className="text-[11px] text-ink-500 truncate">
+                                {u.email}{u.phone && ` · ${u.phone}`}{u.rut && ` · ${u.rut}`}
+                              </div>
+                            </div>
+                            <Link2 className="w-4 h-4 text-ink-400 group-hover:text-brand-600" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+          <p className="text-[11px] text-ink-500 mt-1.5">
+            Si el tutor ya tiene cuenta, seleccionalo de la lista para auto-rellenar. Si no, dejalo vacío y completá los datos abajo.
+          </p>
+        </div>
+      )}
+
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <Label>Nombre completo *</Label>
