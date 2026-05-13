@@ -20,6 +20,7 @@ import { Input, Label } from '../../components/ui/Input'
 import { AttachmentsSection } from '../../components/medical/AttachmentsSection'
 import { SessionLogForm } from '../../components/medical/SessionLogForm'
 import PatientMoodCard from '../../components/mood/PatientMoodCard'
+import PatientHomeworkSection from '../../components/homework/PatientHomeworkSection'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -193,9 +194,14 @@ function TabGeneral({ data, isAdmin, onReload }) {
     }
   }
 
+  const { user: currentUser } = useAuth()
+  const canAssign = currentUser?.role === 'doctor' || currentUser?.role === 'admin'
+
   return (
     <div className="grid lg:grid-cols-2 gap-4">
       <PatientMoodCard patientId={p.id} className="lg:col-span-2" />
+
+      <PatientHomeworkSection patientId={p.id} canAssign={canAssign} />
 
       <Card className="p-6">
         <h3 className="text-sm font-semibold mb-4 inline-flex items-center gap-2">

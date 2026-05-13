@@ -14,6 +14,7 @@ import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
 import DoctorMoodFeed from '../../components/mood/DoctorMoodFeed'
+import DoctorHomeworkFeed from '../../components/homework/DoctorHomeworkFeed'
 
 export default function DoctorDashboard() {
   const { user } = useAuth()
@@ -114,6 +115,11 @@ export default function DoctorDashboard() {
       {/* Feed de "amanecidas" — diarios emocionales recientes de tus pacientes */}
       <motion.div {...fadeInUp}>
         <DoctorMoodFeed />
+      </motion.div>
+
+      {/* Tareas asignadas a tus pacientes */}
+      <motion.div {...fadeInUp}>
+        <DoctorHomeworkFeed />
       </motion.div>
 
       <div>

@@ -32,6 +32,20 @@ export const chatApi = {
   send:    (message, history) => api.post('/chat/message', { message, history }),
 }
 
+export const homeworkApi = {
+  // doctor
+  create:        (data)                  => api.post('/homework/', data),
+  update:        (id, data)              => api.patch(`/homework/${id}`, data),
+  remove:        (id)                    => api.delete(`/homework/${id}`),
+  doctorRecent:  (days = 30)             => api.get('/homework/doctor/recent', { params: { days } }),
+  byPatient:     (patientId, status)     => api.get(`/homework/patient/${patientId}`, { params: { status } }),
+  // paciente
+  mine:          (status)                => api.get('/homework/me', { params: { status } }),
+  myStats:       ()                      => api.get('/homework/me/stats'),
+  complete:      (id, patient_feedback)  => api.patch(`/homework/${id}/complete`, { patient_feedback }),
+  uncomplete:    (id)                    => api.patch(`/homework/${id}/uncomplete`),
+}
+
 export const moodApi = {
   // paciente
   checkIn:     (data)               => api.post('/mood/', data),

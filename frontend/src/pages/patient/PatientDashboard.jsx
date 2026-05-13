@@ -16,6 +16,7 @@ import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
 import MoodCheckin from '../../components/mood/MoodCheckin'
+import PatientHomeworkWidget from '../../components/homework/PatientHomeworkWidget'
 
 export default function PatientDashboard() {
   const { user } = useAuth()
@@ -101,6 +102,11 @@ export default function PatientDashboard() {
       {/* Diario emocional — check-in del día */}
       <motion.div {...fadeInUp}>
         <MoodCheckin />
+      </motion.div>
+
+      {/* Tareas entre sesiones */}
+      <motion.div {...fadeInUp}>
+        <PatientHomeworkWidget />
       </motion.div>
 
       {/* Stats */}
