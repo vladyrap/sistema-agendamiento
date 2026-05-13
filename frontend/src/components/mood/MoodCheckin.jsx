@@ -20,11 +20,11 @@ const SCALE = [
 ]
 
 function moodColor(score) {
-  if (score == null) return 'from-ink-200 to-ink-100'
-  if (score <= 3) return 'from-rose-500 to-rose-300'
-  if (score <= 5) return 'from-amber-500 to-amber-300'
-  if (score <= 7) return 'from-wellness-500 to-wellness-300'
-  return 'from-brand-600 to-brand-300'
+  if (score == null) return 'from-brand-600 via-brand-700 to-brand-800'
+  if (score <= 3)    return 'from-rose-500 via-rose-600 to-rose-700'
+  if (score <= 5)    return 'from-amber-500 via-amber-600 to-amber-700'
+  if (score <= 7)    return 'from-wellness-500 via-wellness-600 to-wellness-700'
+  return 'from-brand-500 via-brand-600 to-brand-800'
 }
 
 /**
@@ -74,12 +74,14 @@ export default function MoodCheckin({ onSaved }) {
 
   const showForm = !today || editing
   const current = today ? SCALE.find((s) => s.v === today.score) : null
+  // Para que el color reaccione al score seleccionado antes de guardar también.
+  const activeScore = today && !editing ? today.score : score
 
   return (
     <div className={cn(
-      'relative overflow-hidden rounded-3xl p-6 sm:p-7 text-white',
+      'relative overflow-hidden rounded-3xl p-6 sm:p-7 text-white transition-[background] duration-500',
       'bg-gradient-to-br',
-      moodColor(today?.score),
+      moodColor(activeScore),
     )}>
       <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/15 blur-2xl pointer-events-none" />
       <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
