@@ -12,10 +12,11 @@ from .patient_note import PatientNote
 from .doctor_block import DoctorBlock
 from .waitlist import Waitlist, WaitlistStatus
 from .session_log import SessionLog
+from .mood_entry import MoodEntry
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
     "Appointment", "Payment", "Review", "MedicalRecord", "MedicalAttachment",
     "AttachmentCategory", "PatientNote", "DoctorBlock", "Waitlist",
-    "WaitlistStatus", "SessionLog",
+    "WaitlistStatus", "SessionLog", "MoodEntry",
 ]

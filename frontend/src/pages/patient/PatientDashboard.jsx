@@ -15,6 +15,7 @@ import { Badge, StatusBadge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
+import MoodCheckin from '../../components/mood/MoodCheckin'
 
 export default function PatientDashboard() {
   const { user } = useAuth()
@@ -95,6 +96,11 @@ export default function PatientDashboard() {
             )}
           </div>
         </div>
+      </motion.div>
+
+      {/* Diario emocional — check-in del día */}
+      <motion.div {...fadeInUp}>
+        <MoodCheckin />
       </motion.div>
 
       {/* Stats */}

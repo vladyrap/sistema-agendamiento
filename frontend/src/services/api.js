@@ -32,6 +32,18 @@ export const chatApi = {
   send:    (message, history) => api.post('/chat/message', { message, history }),
 }
 
+export const moodApi = {
+  // paciente
+  checkIn:     (data)               => api.post('/mood/', data),
+  myEntries:   (days = 90)          => api.get('/mood/me', { params: { days } }),
+  mySummary:   ()                   => api.get('/mood/me/summary'),
+  myToday:     ()                   => api.get('/mood/me/today'),
+  delete:      (id)                 => api.delete(`/mood/${id}`),
+  // doctor / admin
+  patientEntries: (patientId, days = 90) => api.get(`/mood/patient/${patientId}`, { params: { days } }),
+  patientSummary: (patientId)            => api.get(`/mood/patient/${patientId}/summary`),
+}
+
 export const specialtiesApi = {
   list:    ()         => api.get('/specialties/'),
   get:     (id)       => api.get(`/specialties/${id}`),

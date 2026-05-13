@@ -1,6 +1,6 @@
 import React from 'react'
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
-import { Home, Search, Calendar, User, LogOut, Bell } from 'lucide-react'
+import { Home, Search, Calendar, User, LogOut, Bell, Heart } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Logo } from '../../components/ui/Logo'
 import { Avatar } from '../../components/ui/Avatar'
@@ -11,6 +11,7 @@ const links = [
   { to: '/patient',              icon: Home,     label: 'Inicio',          end: true },
   { to: '/patient/search',       icon: Search,   label: 'Buscar' },
   { to: '/patient/appointments', icon: Calendar, label: 'Mis citas' },
+  { to: '/patient/mood',         icon: Heart,    label: 'Diario' },
   { to: '/patient/profile',      icon: User,     label: 'Mi perfil' },
 ]
 

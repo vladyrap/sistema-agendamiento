@@ -19,6 +19,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { Input, Label } from '../../components/ui/Input'
 import { AttachmentsSection } from '../../components/medical/AttachmentsSection'
 import { SessionLogForm } from '../../components/medical/SessionLogForm'
+import PatientMoodCard from '../../components/mood/PatientMoodCard'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -194,6 +195,8 @@ function TabGeneral({ data, isAdmin, onReload }) {
 
   return (
     <div className="grid lg:grid-cols-2 gap-4">
+      <PatientMoodCard patientId={p.id} className="lg:col-span-2" />
+
       <Card className="p-6">
         <h3 className="text-sm font-semibold mb-4 inline-flex items-center gap-2">
           <IdCard className="w-4 h-4 text-brand-600" /> Datos personales

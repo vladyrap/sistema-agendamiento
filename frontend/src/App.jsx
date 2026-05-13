@@ -14,6 +14,7 @@ import BookAppointment from './pages/patient/BookAppointment'
 import MyAppointments from './pages/patient/MyAppointments'
 import Reschedule from './pages/patient/Reschedule'
 import PatientProfile from './pages/patient/PatientProfile'
+import MoodHistory from './pages/patient/MoodHistory'
 
 import DoctorLayout from './pages/doctor/DoctorLayout'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="book/:doctorId" element={<BookAppointment />} />
           <Route path="reschedule/:id" element={<Reschedule />} />
           <Route path="appointments" element={<MyAppointments />} />
+          <Route path="mood" element={<MoodHistory />} />
           <Route path="profile" element={<PatientProfile />} />
         </Route>
 
