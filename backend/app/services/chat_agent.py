@@ -226,20 +226,20 @@ GEMINI_TOOLS_DECL: list[dict] = [
             {
                 "name": "list_specialties",
                 "description": "Lista todas las especialidades médicas y psicológicas disponibles en la plataforma.",
-                "parameters": {"type": "object", "properties": {}},
+                "parameters": {"type": "OBJECT", "properties": {}},
             },
             {
                 "name": "search_doctors",
                 "description": "Busca profesionales activos, opcionalmente filtrados por nombre de especialidad.",
                 "parameters": {
-                    "type": "object",
+                    "type": "OBJECT",
                     "properties": {
                         "specialty_name": {
-                            "type": "string",
+                            "type": "STRING",
                             "description": "Nombre o palabra clave de la especialidad (ej: 'psicología', 'cardiología'). Opcional.",
                         },
                         "limit": {
-                            "type": "integer",
+                            "type": "INTEGER",
                             "description": "Máximo de resultados (1-12). Default 8.",
                         },
                     },
@@ -249,14 +249,14 @@ GEMINI_TOOLS_DECL: list[dict] = [
                 "name": "get_availability",
                 "description": "Obtiene los horarios disponibles de un profesional para los próximos N días.",
                 "parameters": {
-                    "type": "object",
+                    "type": "OBJECT",
                     "properties": {
                         "doctor_id": {
-                            "type": "integer",
+                            "type": "INTEGER",
                             "description": "ID del profesional (obtenido de search_doctors).",
                         },
                         "days_ahead": {
-                            "type": "integer",
+                            "type": "INTEGER",
                             "description": "Días hacia adelante a consultar (1-14). Default 7.",
                         },
                     },
@@ -266,7 +266,7 @@ GEMINI_TOOLS_DECL: list[dict] = [
             {
                 "name": "get_clinic_info",
                 "description": "Devuelve información general de la clínica: modalidades, formas de pago, política de cancelación, líneas de emergencia.",
-                "parameters": {"type": "object", "properties": {}},
+                "parameters": {"type": "OBJECT", "properties": {}},
             },
         ]
     }
