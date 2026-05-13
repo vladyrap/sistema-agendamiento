@@ -3,13 +3,15 @@ from datetime import date as date_type, timedelta, datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.user import User, UserRole
+from app.models.doctor import Doctor
+from app.models.appointment import Appointment, AppointmentStatus
 from app.models.mood_entry import MoodEntry
-from app.schemas.mood import MoodCheckIn, MoodEntryResponse, MoodSummary
+from app.schemas.mood import MoodCheckIn, MoodEntryResponse, MoodSummary, DoctorMoodFeedItem
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/mood", tags=["Diario emocional"])
@@ -174,3 +176,89 @@ def patient_summary(
 ):
     _ensure_patient_access(current_user, patient_id)
     return _compute_summary(db, patient_id)
+
+
+@router.get("/doctor/feed", response_model=List[DoctorMoodFeedItem])
+def doctor_feed(
+    days: int = Query(default=7, ge=1, le=30),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Feed de 'amanecidas' — última entrada de mood de cada paciente del doctor.
+
+    Ordena por score ascendente (más bajo primero) para destacar quién necesita atención.
+    Solo incluye pacientes con quien el doctor ha tenido (o tiene) citas.
+    """
+    if current_user.role != UserRole.doctor:
+        raise HTTPException(status_code=403, detail="Solo médicos")
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+
+    since = date_type.today() - timedelta(days=days)
+
+    # IDs de pacientes con citas con este doctor
+    patient_ids_subq = (
+        db.query(Appointment.patient_id)
+        .filter(Appointment.doctor_id == doctor.id)
+        .distinct()
+        .subquery()
+    )
+
+    # Última entrada por paciente dentro del rango
+    latest_by_patient = (
+        db.query(
+            MoodEntry.patient_id.label("patient_id"),
+            func.max(MoodEntry.date).label("max_date"),
+        )
+        .filter(
+            MoodEntry.patient_id.in_(db.query(patient_ids_subq.c.patient_id)),
+            MoodEntry.date >= since,
+        )
+        .group_by(MoodEntry.patient_id)
+        .subquery()
+    )
+
+    rows = (
+        db.query(MoodEntry, User)
+        .join(
+            latest_by_patient,
+            and_(
+                MoodEntry.patient_id == latest_by_patient.c.patient_id,
+                MoodEntry.date == latest_by_patient.c.max_date,
+            ),
+        )
+        .join(User, User.id == MoodEntry.patient_id)
+        .order_by(MoodEntry.score.asc(), MoodEntry.date.desc())
+        .all()
+    )
+
+    today = date_type.today()
+    items: List[DoctorMoodFeedItem] = []
+    for entry, patient in rows:
+        # Próxima cita con este doctor (si existe)
+        next_appt = (
+            db.query(Appointment)
+            .filter(
+                Appointment.doctor_id == doctor.id,
+                Appointment.patient_id == patient.id,
+                Appointment.appointment_date >= today,
+                Appointment.status.in_([AppointmentStatus.scheduled, AppointmentStatus.confirmed]),
+            )
+            .order_by(Appointment.appointment_date.asc())
+            .first()
+        )
+        items.append(
+            DoctorMoodFeedItem(
+                patient_id=patient.id,
+                patient_name=f"{patient.first_name} {patient.last_name}",
+                patient_email=patient.email,
+                entry_id=entry.id,
+                date=entry.date,
+                score=entry.score,
+                note=entry.note or "",
+                next_appointment_date=next_appt.appointment_date if next_appt else None,
+            )
+        )
+
+    return items

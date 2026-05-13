@@ -29,3 +29,15 @@ class MoodSummary(BaseModel):
     average_30d: Optional[float] = None
     average_7d: Optional[float] = None
     latest: Optional[MoodEntryResponse] = None
+
+
+class DoctorMoodFeedItem(BaseModel):
+    """Fila del feed de 'amanecidas' del doctor — última entrada por paciente."""
+    patient_id: int
+    patient_name: str
+    patient_email: Optional[str] = None
+    entry_id: int
+    date: date
+    score: int
+    note: str
+    next_appointment_date: Optional[date] = None  # próxima cita con este doctor si existe

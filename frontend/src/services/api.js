@@ -42,6 +42,8 @@ export const moodApi = {
   // doctor / admin
   patientEntries: (patientId, days = 90) => api.get(`/mood/patient/${patientId}`, { params: { days } }),
   patientSummary: (patientId)            => api.get(`/mood/patient/${patientId}/summary`),
+  // doctor feed
+  doctorFeed:     (days = 7)             => api.get('/mood/doctor/feed', { params: { days } }),
 }
 
 export const specialtiesApi = {

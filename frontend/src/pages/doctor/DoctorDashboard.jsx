@@ -13,6 +13,7 @@ import { StatusBadge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
+import DoctorMoodFeed from '../../components/mood/DoctorMoodFeed'
 
 export default function DoctorDashboard() {
   const { user } = useAuth()
@@ -108,6 +109,11 @@ export default function DoctorDashboard() {
             </Card>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Feed de "amanecidas" — diarios emocionales recientes de tus pacientes */}
+      <motion.div {...fadeInUp}>
+        <DoctorMoodFeed />
       </motion.div>
 
       <div>
