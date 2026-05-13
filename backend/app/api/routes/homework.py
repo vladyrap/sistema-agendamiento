@@ -249,7 +249,15 @@ def patient_homework(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role not in (UserRole.doctor, UserRole.admin, UserRole.receptionist):
+    allowed = current_user.role in (UserRole.doctor, UserRole.admin, UserRole.receptionist)
+    if not allowed and current_user.role == UserRole.tutor:
+        from app.models.tutor import TutorRelationship
+        link = db.query(TutorRelationship).filter(
+            TutorRelationship.patient_id == patient_id,
+            TutorRelationship.tutor_user_id == current_user.id,
+        ).first()
+        allowed = link is not None
+    if not allowed:
         raise HTTPException(status_code=403, detail="Sin permiso")
     q = _full_query(db).filter(HomeworkAssignment.patient_id == patient_id)
     if status in ("pending", "completed"):

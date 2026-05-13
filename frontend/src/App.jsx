@@ -41,6 +41,9 @@ import MeetingRoom from './pages/teleconsulta/MeetingRoom'
 import PatientFullProfile from './pages/shared/PatientFullProfile'
 import ChatWidget from './components/ChatWidget'
 
+import TutorLayout from './pages/tutor/TutorLayout'
+import TutorDashboard from './pages/tutor/TutorDashboard'
+
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-9 h-9 rounded-full border-[3px] border-ink-200 border-t-brand-600 animate-spin" /></div>
@@ -56,6 +59,7 @@ function RootEntry() {
   if (user.role === 'admin')        return <Navigate to="/admin" replace />
   if (user.role === 'doctor')       return <Navigate to="/doctor" replace />
   if (user.role === 'receptionist') return <Navigate to="/reception" replace />
+  if (user.role === 'tutor')        return <Navigate to="/tutor" replace />
   return <Navigate to="/patient" replace />
 }
 
@@ -124,6 +128,15 @@ export default function App() {
           <Route path="book" element={<ReceptionBook />} />
           <Route path="appointments" element={<ReceptionAppointments />} />
           <Route path="patients" element={<ReceptionPatients />} />
+          <Route path="patients/:id" element={<PatientFullProfile />} />
+        </Route>
+
+        <Route path="/tutor" element={
+          <ProtectedRoute roles={['tutor', 'admin']}>
+            <TutorLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<TutorDashboard />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
       </Routes>

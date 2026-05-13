@@ -14,6 +14,7 @@ from .waitlist import Waitlist, WaitlistStatus
 from .session_log import SessionLog
 from .mood_entry import MoodEntry
 from .homework import HomeworkAssignment, HomeworkStatus
+from .tutor import TutorRelationship
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -21,4 +22,5 @@ __all__ = [
     "AttachmentCategory", "PatientNote", "DoctorBlock", "Waitlist",
     "WaitlistStatus", "SessionLog", "MoodEntry",
     "HomeworkAssignment", "HomeworkStatus",
+    "TutorRelationship",
 ]

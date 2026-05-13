@@ -32,6 +32,17 @@ export const chatApi = {
   send:    (message, history) => api.post('/chat/message', { message, history }),
 }
 
+export const tutorsApi = {
+  // Gestión de tutores
+  add:           (patientId, data)         => api.post(`/tutors/patient/${patientId}`, data),
+  update:        (tutorId, data)           => api.patch(`/tutors/${tutorId}`, data),
+  remove:        (tutorId)                 => api.delete(`/tutors/${tutorId}`),
+  listForPatient:(patientId)               => api.get(`/tutors/patient/${patientId}`),
+  alert:         (tutorId, message)        => api.post(`/tutors/${tutorId}/alert`, { message }),
+  // Portal tutor
+  myPatients:    ()                        => api.get('/tutors/me/patients'),
+}
+
 export const homeworkApi = {
   // doctor
   create:        (data)                  => api.post('/homework/', data),

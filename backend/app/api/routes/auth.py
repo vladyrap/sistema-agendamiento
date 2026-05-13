@@ -17,6 +17,13 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="El email ya está registrado")
     if user_data.rut and db.query(User).filter(User.rut == user_data.rut).first():
         raise HTTPException(status_code=400, detail="El RUT ya está registrado")
+
+    # Solo permitimos auto-registro como paciente o tutor. Doctores y admins se crean
+    # internamente desde el panel admin (no self-service).
+    requested_role = user_data.role or UserRole.patient
+    if requested_role not in (UserRole.patient, UserRole.tutor):
+        raise HTTPException(status_code=400, detail="Rol no permitido para registro público")
+
     user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
@@ -24,11 +31,24 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         last_name=user_data.last_name,
         phone=user_data.phone,
         rut=user_data.rut,
-        role=UserRole.patient,
+        role=requested_role,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Si se registra como tutor, vincular automáticamente cualquier TutorRelationship
+    # pendiente que use su email.
+    if user.role == UserRole.tutor:
+        from app.models.tutor import TutorRelationship
+        pending = db.query(TutorRelationship).filter(
+            TutorRelationship.email == user.email.lower(),
+            TutorRelationship.tutor_user_id == None,  # noqa: E711
+        ).all()
+        for rel in pending:
+            rel.tutor_user_id = user.id
+        if pending:
+            db.commit()
 
     # Avisar a admins del nuevo registro
     admins = db.query(User).filter(User.role == UserRole.admin, User.is_active == True).all()

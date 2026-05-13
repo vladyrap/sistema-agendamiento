@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Mail, Lock, User, Phone, IdCard, ArrowRight, Sparkles } from 'lucide-react'
+import { Mail, Lock, User, Phone, IdCard, ArrowRight, Sparkles, Heart, Shield } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/Button'
 import { Input, Label } from '../../components/ui/Input'
@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     email: '', password: '', first_name: '', last_name: '', phone: '', rut: '',
   })
+  const [role, setRole] = useState('patient')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -22,7 +23,7 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
     try {
-      await register({ ...form, role: 'patient' })
+      await register({ ...form, role })
       toast.success('Cuenta creada. Por favor inicia sesión.')
       navigate('/login')
     } catch (err) {
@@ -84,6 +85,42 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Selector de rol: paciente o tutor */}
+            <div>
+              <Label>Tipo de cuenta</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setRole('patient')}
+                  className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    role === 'patient'
+                      ? 'border-brand-500 bg-brand-50 text-brand-800'
+                      : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'
+                  }`}
+                >
+                  <Heart className="w-4 h-4" />
+                  <span>Paciente</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('tutor')}
+                  className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    role === 'tutor'
+                      ? 'border-brand-500 bg-brand-50 text-brand-800'
+                      : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>Tutor</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-ink-500 mt-1.5">
+                {role === 'patient'
+                  ? 'Cuenta para reservar y gestionar tus consultas.'
+                  : 'Para padres/familiares que cuidan a un paciente. Necesitás que el paciente te agregue como tutor con tu email después.'}
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Nombre</Label>

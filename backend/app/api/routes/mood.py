@@ -13,16 +13,31 @@ from app.models.appointment import Appointment, AppointmentStatus
 from app.models.mood_entry import MoodEntry
 from app.schemas.mood import MoodCheckIn, MoodEntryResponse, MoodSummary, DoctorMoodFeedItem
 from app.api.deps import get_current_user
+from app.api.routes.tutors import notify_tutors_of_crisis
 
 router = APIRouter(prefix="/mood", tags=["Diario emocional"])
 
 
-def _ensure_patient_access(current_user: User, target_patient_id: int):
-    """Patient solo ve los suyos; doctor y admin pueden ver de cualquier paciente."""
-    if current_user.role == UserRole.patient and current_user.id != target_patient_id:
-        raise HTTPException(status_code=403, detail="Sin permiso para ver este diario")
-    if current_user.role not in (UserRole.patient, UserRole.doctor, UserRole.admin, UserRole.receptionist):
-        raise HTTPException(status_code=403, detail="Rol sin permiso")
+def _ensure_patient_access(current_user: User, target_patient_id: int, db: Session = None):
+    """Patient solo ve los suyos; doctor/admin/recepcion ven todos; tutor solo sus pacientes."""
+    if current_user.role == UserRole.patient:
+        if current_user.id != target_patient_id:
+            raise HTTPException(status_code=403, detail="Sin permiso para ver este diario")
+        return
+    if current_user.role in (UserRole.doctor, UserRole.admin, UserRole.receptionist):
+        return
+    if current_user.role == UserRole.tutor:
+        from app.models.tutor import TutorRelationship
+        link = None
+        if db is not None:
+            link = db.query(TutorRelationship).filter(
+                TutorRelationship.patient_id == target_patient_id,
+                TutorRelationship.tutor_user_id == current_user.id,
+            ).first()
+        if not link:
+            raise HTTPException(status_code=403, detail="No sos tutor de este paciente")
+        return
+    raise HTTPException(status_code=403, detail="Rol sin permiso")
 
 
 def _compute_summary(db: Session, patient_id: int) -> MoodSummary:
@@ -75,10 +90,17 @@ def check_in(
         .first()
     )
     if existing:
+        was_crisis = existing.score <= 2
         existing.score = data.score
         existing.note = data.note or ""
         db.commit()
         db.refresh(existing)
+        # Notificar solo si pasa A crisis (no si ya estaba en crisis)
+        if data.score <= 2 and not was_crisis:
+            try:
+                notify_tutors_of_crisis(db, current_user, data.score, data.note or "")
+            except Exception:
+                pass
         return existing
 
     entry = MoodEntry(
@@ -90,6 +112,14 @@ def check_in(
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    # Notificar tutores si el paciente está en crisis (score ≤ 2)
+    if data.score <= 2:
+        try:
+            notify_tutors_of_crisis(db, current_user, data.score, data.note or "")
+        except Exception:
+            pass  # no bloquear el guardado si la notificación falla
+
     return entry
 
 
@@ -158,7 +188,7 @@ def patient_entries(
     current_user: User = Depends(get_current_user),
 ):
     """Doctor/admin/recepcion consultan el diario de un paciente."""
-    _ensure_patient_access(current_user, patient_id)
+    _ensure_patient_access(current_user, patient_id, db)
     since = date_type.today() - timedelta(days=days)
     return (
         db.query(MoodEntry)
@@ -174,7 +204,7 @@ def patient_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    _ensure_patient_access(current_user, patient_id)
+    _ensure_patient_access(current_user, patient_id, db)
     return _compute_summary(db, patient_id)
 
 

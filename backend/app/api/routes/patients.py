@@ -94,10 +94,21 @@ def update_patient_clinical(
     return user
 
 
-def _can_view_full_profile(current_user: User, patient_id: int) -> bool:
+def _can_view_full_profile(current_user: User, patient_id: int, db: Session = None) -> bool:
     if current_user.id == patient_id:
         return True
-    return current_user.role in (UserRole.doctor, UserRole.receptionist, UserRole.admin)
+    if current_user.role in (UserRole.doctor, UserRole.receptionist, UserRole.admin):
+        return True
+    # Tutor con acceso al perfil del paciente
+    if current_user.role == UserRole.tutor and db is not None:
+        from app.models.tutor import TutorRelationship
+        link = db.query(TutorRelationship).filter(
+            TutorRelationship.patient_id == patient_id,
+            TutorRelationship.tutor_user_id == current_user.id,
+            TutorRelationship.can_view_full_profile == True,
+        ).first()
+        return link is not None
+    return False
 
 
 @router.get("/{patient_id}/full")
@@ -108,7 +119,7 @@ def get_patient_full(
 ):
     """Ficha completa del paciente: datos personales, ficha clínica, profesional asignado,
     timeline de citas con session logs, próxima cita, última atención."""
-    if not _can_view_full_profile(current_user, patient_id):
+    if not _can_view_full_profile(current_user, patient_id, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
     user = db.query(User).filter(User.id == patient_id, User.role == UserRole.patient).first()

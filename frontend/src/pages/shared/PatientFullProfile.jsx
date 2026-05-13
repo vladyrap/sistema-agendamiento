@@ -21,6 +21,7 @@ import { AttachmentsSection } from '../../components/medical/AttachmentsSection'
 import { SessionLogForm } from '../../components/medical/SessionLogForm'
 import PatientMoodCard from '../../components/mood/PatientMoodCard'
 import PatientHomeworkSection from '../../components/homework/PatientHomeworkSection'
+import TutorsSection from '../../components/tutors/TutorsSection'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -69,6 +70,7 @@ export default function PatientFullProfile() {
   const backPath = user?.role === 'admin' ? '/admin/users'
                  : user?.role === 'doctor' ? '/doctor/schedule'
                  : user?.role === 'receptionist' ? '/reception/patients'
+                 : user?.role === 'tutor' ? '/tutor'
                  : '/patient'
 
   return (
@@ -196,10 +198,24 @@ function TabGeneral({ data, isAdmin, onReload }) {
 
   const { user: currentUser } = useAuth()
   const canAssign = currentUser?.role === 'doctor' || currentUser?.role === 'admin'
+  const isTutor = currentUser?.role === 'tutor'
+  const canManageTutors = !isTutor && (
+    currentUser?.role === 'doctor' || currentUser?.role === 'admin' ||
+    currentUser?.role === 'receptionist' || currentUser?.id === p.id
+  )
+  const canAlertTutors = currentUser?.role === 'doctor' || currentUser?.role === 'admin' || currentUser?.role === 'receptionist'
 
   return (
     <div className="grid lg:grid-cols-2 gap-4">
       <PatientMoodCard patientId={p.id} className="lg:col-span-2" />
+
+      <TutorsSection
+        patientId={p.id}
+        patientBirthDate={p.birth_date}
+        canManage={canManageTutors}
+        canAlert={canAlertTutors}
+        className="lg:col-span-2"
+      />
 
       <PatientHomeworkSection patientId={p.id} canAssign={canAssign} />
 
