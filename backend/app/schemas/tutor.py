@@ -69,3 +69,23 @@ class TutorPatientSummary(BaseModel):
 class AlertTutorRequest(BaseModel):
     """Cuando el doctor quiere mandar manualmente una alerta al tutor."""
     message: Optional[str] = Field(default="", max_length=2000)
+
+
+class DoctorTutorItem(BaseModel):
+    """Tutor visto desde el doctor: incluye info del paciente al que pertenece."""
+    tutor_id: int
+    tutor_user_id: Optional[int] = None
+    has_account: bool = False
+    name: str
+    relationship_label: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    rut: Optional[str] = None
+    is_legal_guardian: bool
+    notify_on_crisis: bool
+    notify_on_appointments: bool
+    notes: str
+    # Paciente al que pertenece
+    patient_id: int
+    patient_name: str
+    patient_is_minor: bool = False

@@ -41,6 +41,12 @@ export const tutorsApi = {
   alert:         (tutorId, message)        => api.post(`/tutors/${tutorId}/alert`, { message }),
   // Portal tutor
   myPatients:    ()                        => api.get('/tutors/me/patients'),
+  // Doctor cruzada
+  doctorTutors:  ()                        => api.get('/tutors/doctor/me'),
+}
+
+export const myPatientsApi = {
+  forDoctor:     ()                        => api.get('/patients/doctor/me'),
 }
 
 export const homeworkApi = {

@@ -21,7 +21,9 @@ from app.models.mood_entry import MoodEntry
 from app.models.homework import HomeworkAssignment, HomeworkStatus
 from app.schemas.tutor import (
     TutorCreate, TutorUpdate, TutorResponse, TutorPatientSummary, AlertTutorRequest,
+    DoctorTutorItem,
 )
+from app.models.doctor import Doctor
 from app.services.notifications import enqueue
 from app.api.deps import get_current_user
 
@@ -270,6 +272,69 @@ def alert_tutor(
         "message": data.message or "Se solicita tu atención respecto al paciente bajo tu tutoría.",
     })
     return {"queued": True}
+
+
+@router.get("/doctor/me", response_model=List[DoctorTutorItem])
+def doctor_tutors(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Todos los tutores de los pacientes del doctor actual."""
+    if current_user.role != UserRole.doctor:
+        raise HTTPException(status_code=403, detail="Solo profesionales")
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Perfil de profesional no encontrado")
+
+    # IDs de pacientes con citas con este doctor
+    patient_ids_q = (
+        db.query(Appointment.patient_id)
+        .filter(Appointment.doctor_id == doctor.id)
+        .distinct()
+        .all()
+    )
+    patient_ids = [p[0] for p in patient_ids_q]
+    if not patient_ids:
+        return []
+
+    rows = (
+        db.query(TutorRelationship)
+        .options(joinedload(TutorRelationship.patient))
+        .filter(TutorRelationship.patient_id.in_(patient_ids))
+        .order_by(
+            TutorRelationship.is_legal_guardian.desc(),
+            TutorRelationship.created_at.desc(),
+        )
+        .all()
+    )
+
+    today = date_type.today()
+    items: List[DoctorTutorItem] = []
+    for r in rows:
+        p = r.patient
+        age = None
+        if p and p.birth_date:
+            age = today.year - p.birth_date.year
+            if (today.month, today.day) < (p.birth_date.month, p.birth_date.day):
+                age -= 1
+        items.append(DoctorTutorItem(
+            tutor_id=r.id,
+            tutor_user_id=r.tutor_user_id,
+            has_account=r.tutor_user_id is not None,
+            name=r.name,
+            relationship_label=r.relationship_label,
+            email=r.email,
+            phone=r.phone,
+            rut=r.rut,
+            is_legal_guardian=bool(r.is_legal_guardian),
+            notify_on_crisis=bool(r.notify_on_crisis),
+            notify_on_appointments=bool(r.notify_on_appointments),
+            notes=r.notes or "",
+            patient_id=p.id if p else 0,
+            patient_name=f"{p.first_name} {p.last_name}" if p else "",
+            patient_is_minor=age is not None and age < 18,
+        ))
+    return items
 
 
 def notify_tutors_of_crisis(db: Session, patient: User, score: int, note: str = ""):

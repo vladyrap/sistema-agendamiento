@@ -1,9 +1,10 @@
 """Endpoints de pacientes accesibles por staff (recepción + admin) + ficha completa."""
 import secrets
 import string
+from datetime import date as date_type, timedelta
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -13,9 +14,13 @@ from app.models.doctor import Doctor
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.session_log import SessionLog
 from app.models.medical_record import MedicalRecord
+from app.models.mood_entry import MoodEntry
+from app.models.homework import HomeworkAssignment, HomeworkStatus
+from app.models.tutor import TutorRelationship
 from app.schemas.user import UserResponse, AdminPatientUpdate
 from app.schemas.staff import StaffPatientCreate, StaffPatientCreateResponse
 from app.api.deps import require_staff, require_admin, get_current_user
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/patients", tags=["Pacientes"])
 
@@ -247,3 +252,130 @@ def get_patient_full(
             "appointments_cancelled": sum(1 for a in appts if a.status == AppointmentStatus.cancelled),
         },
     }
+
+
+class DoctorPatientItem(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: Optional[str] = None
+    rut: Optional[str] = None
+    age: Optional[int] = None
+    is_minor: bool = False
+    patient_status: Optional[str] = None
+    last_appointment_date: Optional[str] = None
+    next_appointment_date: Optional[str] = None
+    next_appointment_time: Optional[str] = None
+    appointments_total: int = 0
+    mood_latest_score: Optional[int] = None
+    mood_latest_date: Optional[str] = None
+    pending_homework: int = 0
+    tutors_count: int = 0
+    has_legal_guardian: bool = False
+
+
+@router.get("/doctor/me", response_model=List[DoctorPatientItem])
+def my_patients(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Pacientes del doctor actual (con quien tiene/tuvo citas) + resumen rápido."""
+    if current_user.role != UserRole.doctor:
+        raise HTTPException(status_code=403, detail="Solo profesionales")
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Perfil de profesional no encontrado")
+
+    # IDs únicos de pacientes con citas con este doctor
+    patient_ids_q = (
+        db.query(Appointment.patient_id)
+        .filter(Appointment.doctor_id == doctor.id)
+        .distinct()
+        .all()
+    )
+    patient_ids = [p[0] for p in patient_ids_q]
+    if not patient_ids:
+        return []
+
+    patients = (
+        db.query(User)
+        .filter(User.id.in_(patient_ids), User.role == UserRole.patient)
+        .order_by(User.first_name.asc())
+        .all()
+    )
+
+    today = date_type.today()
+    items: List[DoctorPatientItem] = []
+    for p in patients:
+        age = None
+        if p.birth_date:
+            age = today.year - p.birth_date.year
+            if (today.month, today.day) < (p.birth_date.month, p.birth_date.day):
+                age -= 1
+
+        appts_total = (
+            db.query(Appointment)
+            .filter(Appointment.doctor_id == doctor.id, Appointment.patient_id == p.id)
+            .count()
+        )
+        last_appt = (
+            db.query(Appointment)
+            .filter(
+                Appointment.doctor_id == doctor.id,
+                Appointment.patient_id == p.id,
+                Appointment.status == AppointmentStatus.completed,
+            )
+            .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc())
+            .first()
+        )
+        next_appt = (
+            db.query(Appointment)
+            .filter(
+                Appointment.doctor_id == doctor.id,
+                Appointment.patient_id == p.id,
+                Appointment.appointment_date >= today,
+                Appointment.status.in_([AppointmentStatus.scheduled, AppointmentStatus.confirmed]),
+            )
+            .order_by(Appointment.appointment_date.asc(), Appointment.start_time.asc())
+            .first()
+        )
+        latest_mood = (
+            db.query(MoodEntry)
+            .filter(MoodEntry.patient_id == p.id)
+            .order_by(MoodEntry.date.desc())
+            .first()
+        )
+        pending_hw = (
+            db.query(HomeworkAssignment)
+            .filter(
+                HomeworkAssignment.patient_id == p.id,
+                HomeworkAssignment.doctor_id == doctor.id,
+                HomeworkAssignment.status == HomeworkStatus.pending,
+            )
+            .count()
+        )
+        tutors = (
+            db.query(TutorRelationship)
+            .filter(TutorRelationship.patient_id == p.id)
+            .all()
+        )
+        items.append(DoctorPatientItem(
+            id=p.id,
+            name=f"{p.first_name} {p.last_name}",
+            email=p.email,
+            phone=p.phone,
+            rut=p.rut,
+            age=age,
+            is_minor=age is not None and age < 18,
+            patient_status=p.patient_status or "active",
+            last_appointment_date=last_appt.appointment_date.isoformat() if last_appt else None,
+            next_appointment_date=next_appt.appointment_date.isoformat() if next_appt else None,
+            next_appointment_time=next_appt.start_time.strftime("%H:%M") if next_appt else None,
+            appointments_total=appts_total,
+            mood_latest_score=latest_mood.score if latest_mood else None,
+            mood_latest_date=latest_mood.date.isoformat() if latest_mood else None,
+            pending_homework=pending_hw,
+            tutors_count=len(tutors),
+            has_legal_guardian=any(t.is_legal_guardian for t in tutors),
+        ))
+    return items

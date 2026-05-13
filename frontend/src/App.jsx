@@ -22,6 +22,8 @@ import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import DoctorSchedule from './pages/doctor/DoctorSchedule'
 import DoctorAvailability from './pages/doctor/DoctorAvailability'
 import DoctorOwnProfile from './pages/doctor/DoctorOwnProfile'
+import DoctorPatientsList from './pages/doctor/DoctorPatientsList'
+import DoctorTutorsList from './pages/doctor/DoctorTutorsList'
 
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -100,6 +102,8 @@ export default function App() {
         }>
           <Route index element={<DoctorDashboard />} />
           <Route path="schedule" element={<DoctorSchedule />} />
+          <Route path="patients" element={<DoctorPatientsList />} />
+          <Route path="tutors" element={<DoctorTutorsList />} />
           <Route path="availability" element={<DoctorAvailability />} />
           <Route path="profile" element={<DoctorOwnProfile />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
