@@ -4,11 +4,11 @@ import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import {
   ChevronLeft, ChevronRight, ArrowLeft, Calendar, Clock, Video, MapPin,
-  CheckCircle2, Stethoscope, Brain, Sparkles,
+  CheckCircle2, Stethoscope, Brain, Sparkles, Building2,
 } from 'lucide-react'
 import { addDays, format, isSameDay, parseISO, startOfWeek } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { doctorsApi, appointmentsApi } from '../../services/api'
+import { doctorsApi, appointmentsApi, companiesApi } from '../../services/api'
 import { Avatar } from '../../components/ui/Avatar'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -25,6 +25,7 @@ export default function BookAppointment() {
   const { doctorId } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
+  const [benefit, setBenefit] = useState(null) // beneficio empresa si aplica
 
   // Week navigation
   const [weekStart, setWeekStart] = useState(() => startOfWeek(todayPlus(0), { weekStartsOn: 1 }))
@@ -43,7 +44,16 @@ export default function BookAppointment() {
 
   useEffect(() => {
     doctorsApi.get(doctorId).then((r) => setDoctor(r.data))
+    companiesApi.myBenefit().then((r) => setBenefit(r.data)).catch(() => {})
   }, [doctorId])
+
+  // ¿La cita se cubrirá con beneficio empresa?
+  const isCoveredByCompany = (() => {
+    if (!benefit?.has_benefit) return false
+    if ((benefit.sessions_pool_total ?? 0) <= 0) return false
+    if (benefit.monthly_cap !== null && benefit.sessions_used_this_month >= benefit.monthly_cap) return false
+    return true
+  })()
 
   useEffect(() => {
     setSlotsLoading(true)
@@ -319,12 +329,42 @@ export default function BookAppointment() {
                 />
               </div>
 
+              {/* Banner de beneficio empresa */}
+              {isCoveredByCompany && (
+                <div className="my-4 rounded-2xl bg-gradient-to-br from-wellness-50 to-brand-50 border border-wellness-200 p-3.5">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-wellness-600 text-white flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold text-wellness-800">
+                        {benefit.company_name} cubre esta cita
+                      </div>
+                      <div className="text-[11px] text-wellness-700 mt-0.5 leading-relaxed">
+                        Se descuenta automáticamente del pool de tu empresa. Sin pago.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between py-4">
-                <span className="text-sm font-semibold text-ink-900">Total</span>
+                <span className="text-sm font-semibold text-ink-900">Total a pagar</span>
                 <span className="text-xl font-bold tabular-nums tracking-tight">
-                  {doctor.consultation_price > 0 ? formatCLP(doctor.consultation_price) : 'Sin costo'}
+                  {isCoveredByCompany
+                    ? <span className="text-wellness-700">$0</span>
+                    : doctor.consultation_price > 0
+                      ? formatCLP(doctor.consultation_price)
+                      : 'Sin costo'}
                 </span>
               </div>
+
+              {isCoveredByCompany && doctor.consultation_price > 0 && (
+                <div className="text-[11px] text-ink-500 -mt-2 mb-2 text-right">
+                  <span className="line-through">{formatCLP(doctor.consultation_price)}</span>
+                  <span className="ml-1.5 text-wellness-700 font-semibold">cubierto por empresa</span>
+                </div>
+              )}
 
               <Button
                 size="lg"
@@ -334,15 +374,19 @@ export default function BookAppointment() {
               >
                 {submitting
                   ? 'Agendando...'
-                  : doctor.consultation_price > 0
-                    ? <>Pagar y reservar <CheckCircle2 className="w-4 h-4" /></>
-                    : <>Confirmar reserva <CheckCircle2 className="w-4 h-4" /></>}
+                  : isCoveredByCompany
+                    ? <>Reservar con beneficio empresa <CheckCircle2 className="w-4 h-4" /></>
+                    : doctor.consultation_price > 0
+                      ? <>Pagar y reservar <CheckCircle2 className="w-4 h-4" /></>
+                      : <>Confirmar reserva <CheckCircle2 className="w-4 h-4" /></>}
               </Button>
 
               <p className="text-[11px] text-center text-ink-400 mt-3">
-                {doctor.consultation_price > 0
-                  ? 'Pago seguro vía MercadoPago · Cancelación gratuita hasta 24h antes'
-                  : 'Cancelación gratuita hasta 24h antes'}
+                {isCoveredByCompany
+                  ? `Pool empresa restante: ${benefit.sessions_pool_total} sesiones · Cancelación gratuita hasta 24h antes`
+                  : doctor.consultation_price > 0
+                    ? 'Pago seguro vía MercadoPago · Cancelación gratuita hasta 24h antes'
+                    : 'Cancelación gratuita hasta 24h antes'}
               </p>
             </Card>
           </div>

@@ -218,13 +218,14 @@ def create_appointment(
 
     # ── Cobertura por empresa (convenio B2B) ──
     # Si el paciente tiene membership activo + la empresa tiene pool, descontamos.
+    covered_by_company = None
     try:
         from app.api.routes.companies import try_cover_with_company
-        covered_by = try_cover_with_company(db, target_patient_id, appt.id)
-        if covered_by:
+        covered_by_company = try_cover_with_company(db, target_patient_id, appt.id)
+        if covered_by_company:
             logger.info(
                 "appointment.covered_by_company",
-                extra={"company_id": covered_by.id, "appointment_id": appt.id},
+                extra={"company_id": covered_by_company.id, "appointment_id": appt.id},
             )
     except Exception:
         logger.exception("appointment.company_cover_failed")
@@ -292,7 +293,11 @@ def create_appointment(
     payment_status: Optional[str] = None
     price = doctor.consultation_price or 0
 
-    if price > 0 and payments_service.is_enabled():
+    # Si la cita ya quedó cubierta por convenio de empresa, no generamos cobro.
+    if covered_by_company is not None:
+        payment_status = "covered_by_company"
+
+    if price > 0 and payments_service.is_enabled() and covered_by_company is None:
         title = f"Consulta con Dr(a). {doctor.user.first_name} {doctor.user.last_name}"
         result = payments_service.create_preference(
             appointment_id=appt.id,
