@@ -11,6 +11,7 @@ class UserRole(str, enum.Enum):
     admin = "admin"
     receptionist = "receptionist"
     tutor = "tutor"
+    company_admin = "company_admin"
 
 
 # Estados clínicos del paciente. Estado distinto de is_active (que es bloqueo de la cuenta).

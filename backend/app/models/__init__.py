@@ -16,6 +16,7 @@ from .mood_entry import MoodEntry
 from .homework import HomeworkAssignment, HomeworkStatus
 from .tutor import TutorRelationship
 from .questionnaire import QuestionnaireAssignment
+from .company import Company, CompanyMembership
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -24,4 +25,5 @@ __all__ = [
     "WaitlistStatus", "SessionLog", "MoodEntry",
     "HomeworkAssignment", "HomeworkStatus",
     "TutorRelationship", "QuestionnaireAssignment",
+    "Company", "CompanyMembership",
 ]

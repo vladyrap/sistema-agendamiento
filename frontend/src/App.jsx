@@ -47,6 +47,10 @@ import ChatWidget from './components/ChatWidget'
 import TutorLayout from './pages/tutor/TutorLayout'
 import TutorDashboard from './pages/tutor/TutorDashboard'
 
+import CompanyLayout from './pages/company/CompanyLayout'
+import CompanyDashboard from './pages/company/CompanyDashboard'
+import AdminCompanies from './pages/admin/AdminCompanies'
+
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-9 h-9 rounded-full border-[3px] border-ink-200 border-t-brand-600 animate-spin" /></div>
@@ -59,10 +63,11 @@ function RootEntry() {
   const { user, loading } = useAuth()
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-9 h-9 rounded-full border-[3px] border-ink-200 border-t-brand-600 animate-spin" /></div>
   if (!user) return <LandingPage />
-  if (user.role === 'admin')        return <Navigate to="/admin" replace />
-  if (user.role === 'doctor')       return <Navigate to="/doctor" replace />
-  if (user.role === 'receptionist') return <Navigate to="/reception" replace />
-  if (user.role === 'tutor')        return <Navigate to="/tutor" replace />
+  if (user.role === 'admin')         return <Navigate to="/admin" replace />
+  if (user.role === 'doctor')        return <Navigate to="/doctor" replace />
+  if (user.role === 'receptionist')  return <Navigate to="/reception" replace />
+  if (user.role === 'tutor')         return <Navigate to="/tutor" replace />
+  if (user.role === 'company_admin') return <Navigate to="/company" replace />
   return <Navigate to="/patient" replace />
 }
 
@@ -123,6 +128,7 @@ export default function App() {
           <Route path="receptionists" element={<AdminReceptionists />} />
           <Route path="appointments" element={<AdminAppointments />} />
           <Route path="specialties" element={<AdminSpecialties />} />
+          <Route path="companies" element={<AdminCompanies />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
 
@@ -145,6 +151,14 @@ export default function App() {
         }>
           <Route index element={<TutorDashboard />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
+        </Route>
+
+        <Route path="/company" element={
+          <ProtectedRoute roles={['company_admin', 'admin']}>
+            <CompanyLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<CompanyDashboard />} />
         </Route>
       </Routes>
       <ChatWidget />

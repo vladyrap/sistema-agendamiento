@@ -51,6 +51,26 @@ export const myPatientsApi = {
   forDoctor:     ()                        => api.get('/patients/doctor/me'),
 }
 
+export const companiesApi = {
+  // Admin
+  list:        ()                     => api.get('/companies/'),
+  get:         (id)                   => api.get(`/companies/${id}`),
+  create:      (data)                 => api.post('/companies/', data),
+  update:      (id, data)             => api.patch(`/companies/${id}`, data),
+  remove:      (id)                   => api.delete(`/companies/${id}`),
+  topup:       (id, sessions, note)   => api.post(`/companies/${id}/topup`, { sessions, note }),
+  assignAdmin: (id, admin_email)      => api.post(`/companies/${id}/assign-admin`, { admin_email }),
+  members:     (id)                   => api.get(`/companies/${id}/members`),
+  addMember:   (id, patient_email)    => api.post(`/companies/${id}/members`, { patient_email }),
+  removeMember:(membershipId)         => api.delete(`/companies/memberships/${membershipId}`),
+  // Patient
+  myBenefit:   ()                     => api.get('/companies/me/benefit'),
+  // Company admin portal
+  myStats:     ()                     => api.get('/companies/me/stats'),
+  myUsage:     (days = 60, anonymized = true) => api.get('/companies/me/usage', { params: { days, anonymized } }),
+  myMembers:   ()                     => api.get('/companies/me/members'),
+}
+
 export const questionnairesApi = {
   list:          ()                                    => api.get('/questionnaires/'),
   get:           (code)                                => api.get(`/questionnaires/${code}`),

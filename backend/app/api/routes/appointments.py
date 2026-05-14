@@ -1,8 +1,11 @@
 import secrets
+import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session, joinedload, selectinload
+
+logger = logging.getLogger(__name__)
 from app.core.database import get_db
 from app.core.redis_client import cache_delete_pattern
 from app.core.metrics import (
@@ -211,6 +214,21 @@ def create_appointment(
         meeting_room_token=meeting_room_token,
     )
     db.add(appt)
+    db.flush()
+
+    # ── Cobertura por empresa (convenio B2B) ──
+    # Si el paciente tiene membership activo + la empresa tiene pool, descontamos.
+    try:
+        from app.api.routes.companies import try_cover_with_company
+        covered_by = try_cover_with_company(db, target_patient_id, appt.id)
+        if covered_by:
+            logger.info(
+                "appointment.covered_by_company",
+                extra={"company_id": covered_by.id, "appointment_id": appt.id},
+            )
+    except Exception:
+        logger.exception("appointment.company_cover_failed")
+
     db.commit()
     cache_delete_pattern(f"slots:doctor:{data.doctor_id}:{data.appointment_date}")
 

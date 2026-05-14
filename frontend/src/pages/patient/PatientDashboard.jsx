@@ -18,6 +18,7 @@ import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
 import MoodCheckin from '../../components/mood/MoodCheckin'
 import PatientHomeworkWidget from '../../components/homework/PatientHomeworkWidget'
 import PatientQuestionnairesWidget from '../../components/questionnaires/PatientQuestionnairesWidget'
+import CompanyBenefitCard from '../../components/companies/CompanyBenefitCard'
 
 export default function PatientDashboard() {
   const { user } = useAuth()
@@ -98,6 +99,11 @@ export default function PatientDashboard() {
             )}
           </div>
         </div>
+      </motion.div>
+
+      {/* Beneficio corporativo (si tiene) */}
+      <motion.div {...fadeInUp}>
+        <CompanyBenefitCard />
       </motion.div>
 
       {/* Diario emocional — check-in del día */}

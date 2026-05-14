@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayoutDashboard, Users, Stethoscope, ConciergeBell, CalendarDays, Tag } from 'lucide-react'
+import { LayoutDashboard, Users, Stethoscope, ConciergeBell, CalendarDays, Tag, Building2 } from 'lucide-react'
 import { AppShell } from '../../components/layout/AppShell'
 
 const links = [
@@ -9,6 +9,7 @@ const links = [
   { to: '/admin/receptionists',   icon: ConciergeBell,   label: 'Recepcionistas' },
   { to: '/admin/appointments',    icon: CalendarDays,    label: 'Citas' },
   { to: '/admin/specialties',     icon: Tag,             label: 'Especialidades' },
+  { to: '/admin/companies',       icon: Building2,       label: 'Empresas' },
 ]
 
 export default function AdminLayout() {

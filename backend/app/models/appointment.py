@@ -29,6 +29,8 @@ class Appointment(Base):
     reason = Column(Text)
     notes = Column(Text)
     cancellation_reason = Column(String(300))
+    # Si la cita fue cubierta por el pool de una empresa (convenio B2B):
+    paid_by_company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

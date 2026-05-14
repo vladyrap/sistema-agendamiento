@@ -8,7 +8,7 @@ from app.core.logging_config import setup_logging
 from app.api.routes import (
     auth, specialties, clinics, doctors, appointments, admin, payments, reviews, patients,
     medical_records, patient_notes, doctor_blocks, waitlist, attachments, session_logs, chat, mood,
-    homework, tutors, questionnaires,
+    homework, tutors, questionnaires, companies,
 )
 
 setup_logging()
@@ -52,6 +52,7 @@ app.include_router(mood.router, prefix=settings.API_PREFIX)
 app.include_router(homework.router, prefix=settings.API_PREFIX)
 app.include_router(tutors.router, prefix=settings.API_PREFIX)
 app.include_router(questionnaires.router, prefix=settings.API_PREFIX)
+app.include_router(companies.router, prefix=settings.API_PREFIX)
 
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
