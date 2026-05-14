@@ -63,7 +63,7 @@ export function AppShell({ links, basePath, brandTag }) {
 
         <div className="px-3 py-3 border-t border-ink-100">
           <div className="flex items-center justify-between mb-2 px-2">
-            <NotificationsBell />
+            <NotificationsBell placement="up-start" />
             <button
               onClick={handleLogout}
               title="Cerrar sesión"

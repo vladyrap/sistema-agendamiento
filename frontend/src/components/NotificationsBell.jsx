@@ -42,8 +42,12 @@ function saveSeen(set) {
 /**
  * Campanita con badge de no leídos + dropdown panel.
  * "No leído" se trackea en localStorage por ID de notificación.
+ *
+ * placement:
+ *   "down-end" (default) — panel debajo del botón, alineado al borde derecho (abre hacia la izquierda). Para top-bar.
+ *   "up-start" — panel encima del botón, alineado al borde izquierdo (abre hacia la derecha). Para sidebar inferior.
  */
-export default function NotificationsBell() {
+export default function NotificationsBell({ placement = 'down-end' }) {
   const [items, setItems] = useState([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -126,7 +130,10 @@ export default function NotificationsBell() {
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute right-0 mt-2 w-[360px] max-w-[calc(100vw-2rem)] z-50',
+              'absolute w-[360px] max-w-[calc(100vw-2rem)] z-50',
+              placement === 'up-start'
+                ? 'bottom-full mb-2 left-0'
+                : 'right-0 mt-2',
               'rounded-2xl bg-white shadow-2xl ring-1 ring-ink-900/10 overflow-hidden',
             )}
           >
