@@ -59,7 +59,7 @@ def _serialize(t: ExternalTestResult, catalog: dict[str, dict] = None) -> Extern
     cat_entry = catalog.get(t.test_code)
     doc_name = None
     if t.doctor and t.doctor.user:
-        doc_name = f"Dr(a). {t.doctor.user.first_name} {t.doctor.user.last_name}"
+        doc_name = f"Ps. {t.doctor.user.first_name} {t.doctor.user.last_name}"
     return ExternalTestResponse(
         id=t.id,
         patient_id=t.patient_id,

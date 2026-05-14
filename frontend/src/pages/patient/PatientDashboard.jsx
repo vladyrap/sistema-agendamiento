@@ -87,7 +87,7 @@ export default function PatientDashboard() {
                   <Avatar name={`${next.doctor.user.first_name} ${next.doctor.user.last_name}`} size="md" />
                   <div>
                     <div className="text-sm font-semibold">
-                      Dr(a). {next.doctor.user.first_name} {next.doctor.user.last_name}
+                      Ps. {next.doctor.user.first_name} {next.doctor.user.last_name}
                     </div>
                     <div className="text-xs text-white/70">{next.doctor.specialty.name}</div>
                   </div>
@@ -183,7 +183,7 @@ export default function PatientDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <div className="font-semibold text-ink-900 text-sm truncate">
-                          Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}
+                          Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}
                         </div>
                         <StatusBadge status={a.status} />
                       </div>

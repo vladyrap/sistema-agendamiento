@@ -114,7 +114,7 @@ export default function BookAppointment() {
           <Card className="p-5 flex items-center gap-4">
             <Avatar name={fullName} src={doctor?.user?.photo_url} size="lg" />
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-ink-900">Dr(a). {fullName}</div>
+              <div className="font-semibold text-ink-900">Ps. {fullName}</div>
               <div className="flex items-center gap-1.5 text-sm text-brand-600 mt-0.5">
                 <SpecialtyIcon className="w-3.5 h-3.5" /> {doctor.specialty.name}
               </div>
@@ -308,7 +308,7 @@ export default function BookAppointment() {
               </div>
 
               <div className="space-y-3 pb-5 border-b border-ink-100">
-                <Row label="Profesional" value={`Dr(a). ${fullName}`} />
+                <Row label="Profesional" value={`Ps. ${fullName}`} />
                 <Row label="Especialidad" value={doctor.specialty.name} />
                 <Row label="Duración" value={`${doctor.consultation_duration} minutos`} />
                 <Row

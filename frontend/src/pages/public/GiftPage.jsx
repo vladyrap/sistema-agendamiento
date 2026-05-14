@@ -133,7 +133,7 @@ export default function GiftPage() {
                   </span>
                 </h1>
                 <p className="text-lg text-ink-500 mt-6 max-w-xl mx-auto leading-relaxed">
-                  Regalá una sesión con un psicólogo o médico. Tu persona elegida recibe un código por email para canjear cuando quiera.
+                  Regalá una sesión con un psicólogo/a. Tu persona elegida recibe un código por email para canjear cuando quiera.
                 </p>
               </div>
 

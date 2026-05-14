@@ -46,7 +46,7 @@ export function ReviewForm({ open, onClose, appointment, onSubmitted }) {
       open={open}
       onClose={onClose}
       title="Califica tu consulta"
-      description={`¿Cómo fue tu experiencia con Dr(a). ${fullName}?`}
+      description={`¿Cómo fue tu experiencia con Ps. ${fullName}?`}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="flex flex-col items-center gap-2 py-4">

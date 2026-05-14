@@ -76,7 +76,7 @@ export default function ReceptionAppointments() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
-          <Input placeholder="Buscar por paciente o médico..." leftIcon={Search} value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input placeholder="Buscar por paciente o psicólogo/a..." leftIcon={Search} value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="flex gap-1.5 overflow-x-auto">
           {tabs.map((t) => (
@@ -116,7 +116,7 @@ export default function ReceptionAppointments() {
                         <StatusBadge status={a.status} />
                       </div>
                       <div className="flex items-center gap-1.5 text-sm text-brand-600 mt-1">
-                        <Icon className="w-3.5 h-3.5" /> Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name} · {a.doctor.specialty.name}
+                        <Icon className="w-3.5 h-3.5" /> Ps. {a.doctor.user.first_name} {a.doctor.user.last_name} · {a.doctor.specialty.name}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-ink-600">
                         <div className="flex items-center gap-1.5">

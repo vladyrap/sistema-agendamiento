@@ -87,7 +87,7 @@ export function SessionLogForm({ open, onClose, appointment, onSaved }) {
         <div className="space-y-5">
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
             {isPsych ? <Brain className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
-            {isPsych ? 'Plantilla psicología' : 'Plantilla médica'}
+            {isPsych ? 'Plantilla psicología' : 'Plantilla general'}
             {!data.is_draft && <span className="ml-1 px-1.5 py-0.5 rounded bg-wellness-100 text-wellness-700 text-[10px]">FINALIZADA</span>}
           </div>
 

@@ -80,7 +80,7 @@ export default function DoctorProfile() {
               </div>
               <div className="mt-5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dr(a). {fullName}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Ps. {fullName}</h1>
                   <Badge tone="success" dot>Verificado</Badge>
                 </div>
                 <div className="flex items-center gap-1.5 mt-2 text-brand-600 font-medium">
@@ -127,7 +127,7 @@ export default function DoctorProfile() {
               {[
                 { icon: Award,      label: 'Experiencia',  value: '10+ años' },
                 { icon: ThumbsUp,   label: 'Recomendado',  value: '98%' },
-                { icon: ShieldCheck,label: 'Verificado',   value: 'Colegio médico' },
+                { icon: ShieldCheck,label: 'Verificado',   value: 'Colegio de Psicólogos' },
               ].map((s) => (
                 <div key={s.label} className="rounded-xl border border-ink-100 bg-ink-50/50 p-4">
                   <s.icon className="w-4 h-4 text-brand-600" />

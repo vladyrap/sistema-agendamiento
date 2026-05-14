@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const roleLabels = { patient: 'Paciente', doctor: 'Médico', admin: 'Admin' }
+const roleLabels = { patient: 'Paciente', doctor: 'Psicólogo/a', admin: 'Admin' }
 
 export default function Navbar({ links = [] }) {
   const { user, logout } = useAuth()

@@ -92,7 +92,7 @@ def update_patient_clinical(
         user.patient_status = data.patient_status
     if data.assigned_doctor_id is not None:
         if data.assigned_doctor_id and not db.query(Doctor).filter(Doctor.id == data.assigned_doctor_id).first():
-            raise HTTPException(status_code=404, detail="Médico no encontrado")
+            raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
         user.assigned_doctor_id = data.assigned_doctor_id or None
     db.commit()
     db.refresh(user)

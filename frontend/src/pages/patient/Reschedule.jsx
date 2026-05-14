@@ -86,7 +86,7 @@ export default function Reschedule() {
             <div className="flex items-center gap-4">
               <Avatar name={fullName} size="lg" />
               <div className="flex-1">
-                <div className="font-semibold text-ink-900">Dr(a). {fullName}</div>
+                <div className="font-semibold text-ink-900">Ps. {fullName}</div>
                 <div className="flex items-center gap-1.5 text-sm text-brand-600 mt-0.5">
                   <SpecialtyIcon className="w-3.5 h-3.5" /> {appointment.doctor.specialty.name}
                 </div>
@@ -197,7 +197,7 @@ export default function Reschedule() {
               <div className="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-3">Nueva cita</div>
 
               <div className="space-y-3 pb-5 border-b border-ink-100 text-sm">
-                <Row label="Profesional" value={`Dr(a). ${fullName}`} />
+                <Row label="Profesional" value={`Ps. ${fullName}`} />
                 <Row
                   label="Fecha"
                   value={format(selectedDate, "d MMM yyyy", { locale: es })}

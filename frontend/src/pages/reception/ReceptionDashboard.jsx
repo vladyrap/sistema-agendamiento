@@ -123,7 +123,7 @@ export default function ReceptionDashboard() {
                         <StatusBadge status={a.status} />
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-brand-600 mt-1">
-                        <Icon className="w-3.5 h-3.5" /> Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name} · {a.doctor.specialty.name}
+                        <Icon className="w-3.5 h-3.5" /> Ps. {a.doctor.user.first_name} {a.doctor.user.last_name} · {a.doctor.specialty.name}
                       </div>
                     </div>
                     <div className="text-right shrink-0">

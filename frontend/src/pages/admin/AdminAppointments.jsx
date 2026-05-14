@@ -52,7 +52,7 @@ export default function AdminAppointments() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
-          <Input placeholder="Buscar por paciente o médico..." leftIcon={Search} value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input placeholder="Buscar por paciente o psicólogo/a..." leftIcon={Search} value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="flex gap-1.5 overflow-x-auto">
           {tabs.map((t) => (
@@ -82,7 +82,7 @@ export default function AdminAppointments() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-ink-100 bg-ink-50/60">
-                  {['#', 'Paciente', 'Médico', 'Fecha', 'Hora', 'Estado'].map((h) => (
+                  {['#', 'Paciente', 'Psicólogo/a', 'Fecha', 'Hora', 'Estado'].map((h) => (
                     <th key={h} className="text-left px-5 py-3 text-[10px] uppercase tracking-wider text-ink-500 font-bold">{h}</th>
                   ))}
                 </tr>

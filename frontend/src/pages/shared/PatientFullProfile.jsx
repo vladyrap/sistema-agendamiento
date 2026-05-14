@@ -38,7 +38,7 @@ const STATUS_CFG = {
   active:        { label: 'Activo',         tone: 'success' },
   in_treatment:  { label: 'En tratamiento', tone: 'brand'   },
   inactive:      { label: 'Inactivo',       tone: 'ink'     },
-  discharged:    { label: 'Alta médica',    tone: 'warning' },
+  discharged:    { label: 'Alta',           tone: 'warning' },
 }
 
 export default function PatientFullProfile() {
@@ -271,7 +271,7 @@ function TabGeneral({ data, isAdmin, onReload }) {
           {!editing ? (
             <dl className="space-y-2.5 text-sm">
               <Row label="Estado del paciente" value={STATUS_CFG[p.patient_status]?.label || 'Activo'} />
-              <Row label="Profesional asignado" value={data.assigned_doctor ? `Dr(a). ${data.assigned_doctor.first_name} ${data.assigned_doctor.last_name} · ${data.assigned_doctor.specialty}` : 'Sin asignar'} />
+              <Row label="Profesional asignado" value={data.assigned_doctor ? `Ps. ${data.assigned_doctor.first_name} ${data.assigned_doctor.last_name} · ${data.assigned_doctor.specialty}` : 'Sin asignar'} />
             </dl>
           ) : (
             <div className="space-y-3">
@@ -285,7 +285,7 @@ function TabGeneral({ data, isAdmin, onReload }) {
                 <Label>Profesional asignado</Label>
                 <select className="w-full h-11 rounded-xl border border-ink-200 bg-white px-3 text-sm" value={statusForm.assigned_doctor_id} onChange={(e) => setStatusForm({ ...statusForm, assigned_doctor_id: e.target.value })}>
                   <option value="">— Sin asignar —</option>
-                  {allDoctors.map((d) => <option key={d.id} value={d.id}>Dr(a). {d.user.first_name} {d.user.last_name} · {d.specialty.name}</option>)}
+                  {allDoctors.map((d) => <option key={d.id} value={d.id}>Ps. {d.user.first_name} {d.user.last_name} · {d.specialty.name}</option>)}
                 </select>
               </div>
               <div className="flex gap-2 pt-2">
@@ -319,7 +319,7 @@ function TabDoctor({ data }) {
       <div className="flex items-start gap-4">
         <Avatar name={`${d.first_name} ${d.last_name}`} size="xl" />
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">Dr(a). {d.first_name} {d.last_name}</h3>
+          <h3 className="text-lg font-semibold">Ps. {d.first_name} {d.last_name}</h3>
           <div className="text-sm text-brand-600 font-medium">{d.specialty}</div>
           {d.clinic && <div className="text-sm text-ink-500 mt-0.5 inline-flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {d.clinic}</div>}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-ink-600">
@@ -384,7 +384,7 @@ function TimelineItem({ appointment: a, onOpenSession }) {
             </div>
             <div className="flex items-center gap-1.5 mt-1 text-sm text-brand-600">
               {isPsych ? <Brain className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
-              {a.doctor ? `Dr(a). ${a.doctor.first_name} ${a.doctor.last_name} · ${a.doctor.specialty}` : '—'}
+              {a.doctor ? `Ps. ${a.doctor.first_name} ${a.doctor.last_name} · ${a.doctor.specialty}` : '—'}
             </div>
             {a.reason && <p className="text-sm text-ink-500 mt-2 italic">"{a.reason}"</p>}
           </div>

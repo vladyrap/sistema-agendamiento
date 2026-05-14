@@ -65,7 +65,7 @@ export default function SearchDoctors() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-wellness-600">ideal para ti.</span>
           </h1>
           <p className="text-ink-500 mt-3 text-pretty">
-            Médicos y psicólogos con disponibilidad real, presencial o por videollamada.
+            Psicólogos/as con disponibilidad real, presencial o por videollamada.
           </p>
 
           {/* Search */}

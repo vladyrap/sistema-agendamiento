@@ -58,7 +58,7 @@ export default function DoctorDashboard() {
                 {format(new Date(), "EEEE d 'de' MMMM", { locale: es })}
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tightest leading-tight">
-                {greeting}, Dr(a). {user?.first_name}.
+                {greeting}, Ps. {user?.first_name}.
               </h1>
               <p className="text-white/70 mt-2">
                 {today.length === 0

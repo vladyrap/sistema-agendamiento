@@ -169,7 +169,7 @@ export default function PatientProfile() {
       <Card className="p-6 sm:p-7">
         <CardHeader className="p-0 pb-5">
           <CardTitle className="flex items-center gap-2"><HeartPulse className="w-4 h-4 text-brand-600" /> Ficha clínica</CardTitle>
-          <CardDescription>Información que el médico verá antes de tu consulta. Completar es opcional pero muy útil.</CardDescription>
+          <CardDescription>Información que el psicólogo/a verá antes de tu consulta. Completar es opcional pero muy útil.</CardDescription>
         </CardHeader>
 
         {medLoading ? (
@@ -232,7 +232,7 @@ export default function PatientProfile() {
       <Card className="p-6 sm:p-7">
         <CardHeader className="p-0 pb-5">
           <CardTitle className="flex items-center gap-2"><Paperclip className="w-4 h-4 text-brand-600" /> Imágenes y exámenes</CardTitle>
-          <CardDescription>Sube radiografías, ecografías, exámenes de laboratorio o recetas. Tu médico las verá antes de la consulta.</CardDescription>
+          <CardDescription>Sube radiografías, ecografías, exámenes de laboratorio o recetas. Tu psicólogo/a las verá antes de la consulta.</CardDescription>
         </CardHeader>
         <AttachmentsSection mode="self" />
       </Card>

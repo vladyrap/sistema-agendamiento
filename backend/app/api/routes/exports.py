@@ -52,9 +52,9 @@ def export_appointments(
     if current_user.role == UserRole.doctor:
         doc = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
         if not doc:
-            raise HTTPException(status_code=404, detail="Doctor no encontrado")
+            raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
         q = q.filter(Appointment.doctor_id == doc.id)
-        scope = f"Dr(a). {current_user.first_name} {current_user.last_name}"
+        scope = f"Ps. {current_user.first_name} {current_user.last_name}"
     elif current_user.role == UserRole.patient:
         q = q.filter(Appointment.patient_id == current_user.id)
         scope = f"{current_user.first_name} {current_user.last_name}"
@@ -74,7 +74,7 @@ def export_appointments(
             "paciente_email": a.patient.email if a.patient else "",
             "paciente_rut": a.patient.rut if a.patient else "",
             "doctor": (
-                f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+                f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
                 if a.doctor and a.doctor.user else ""
             ),
             "especialidad": a.doctor.specialty.name if a.doctor and a.doctor.specialty else "",
@@ -192,7 +192,7 @@ def export_payments(
             "paciente": f"{a.patient.first_name} {a.patient.last_name}" if a and a.patient else "",
             "paciente_email": a.patient.email if a and a.patient else "",
             "doctor": (
-                f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+                f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
                 if a and a.doctor and a.doctor.user else ""
             ),
             "cita_fecha": a.appointment_date if a else "",
@@ -310,7 +310,7 @@ def export_homework(
         "estado": h.status.value if hasattr(h.status, "value") else str(h.status),
         "fecha_limite": h.due_date,
         "doctor": (
-            f"Dr(a). {h.doctor.user.first_name} {h.doctor.user.last_name}"
+            f"Ps. {h.doctor.user.first_name} {h.doctor.user.last_name}"
             if h.doctor and h.doctor.user else ""
         ),
         "feedback_paciente": h.patient_feedback or "",
@@ -366,7 +366,7 @@ def export_questionnaires(
         "severidad": a.severity_label or "",
         "crisis_detectada": bool(a.crisis_flagged),
         "doctor": (
-            f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+            f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
             if a.doctor and a.doctor.user else ""
         ),
         "nota_doctor": a.doctor_note or "",
@@ -489,7 +489,7 @@ def export_company_usage(
         "empleado": f"{a.patient.first_name} {a.patient.last_name}" if a.patient else "",
         "empleado_email": a.patient.email if a.patient else "",
         "doctor": (
-            f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+            f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
             if a.doctor and a.doctor.user else ""
         ),
         "especialidad": a.doctor.specialty.name if a.doctor and a.doctor.specialty else "",

@@ -57,11 +57,11 @@ export default function AdminDoctors() {
         bio: form.bio || null,
       }
       await adminApi.createDoctor(payload)
-      toast.success('Médico creado')
+      toast.success('Psicólogo/a creado/a')
       setForm(empty)
       loadDoctors()
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error al crear médico')
+      toast.error(err.response?.data?.detail || 'Error al crear psicólogo/a')
     } finally {
       setSubmitting(false)
     }
@@ -70,7 +70,7 @@ export default function AdminDoctors() {
   return (
     <motion.div {...fadeInUp} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Médicos</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Psicólogos/as</h1>
         <p className="text-sm text-ink-500 mt-1">Crea cuentas de profesionales y gestiona el plantel.</p>
       </div>
 
@@ -78,7 +78,7 @@ export default function AdminDoctors() {
         {/* Form */}
         <Card className="p-6">
           <CardHeader className="p-0 pb-5">
-            <CardTitle>Nuevo médico</CardTitle>
+            <CardTitle>Nuevo/a psicólogo/a</CardTitle>
             <CardDescription>Crea usuario y perfil profesional en una sola operación.</CardDescription>
           </CardHeader>
 
@@ -126,7 +126,7 @@ export default function AdminDoctors() {
             <div><Label>Bio (opcional)</Label><Textarea rows={2} value={form.bio} onChange={set('bio')} /></div>
 
             <Button type="submit" className="w-full" disabled={submitting}>
-              <Plus className="w-4 h-4" /> {submitting ? 'Creando...' : 'Crear médico'}
+              <Plus className="w-4 h-4" /> {submitting ? 'Creando...' : 'Crear psicólogo/a'}
             </Button>
           </form>
         </Card>
@@ -141,14 +141,14 @@ export default function AdminDoctors() {
           {loading ? (
             <div className="py-10 flex justify-center"><Spinner /></div>
           ) : doctors.length === 0 ? (
-            <EmptyState icon={Stethoscope} title="Sin médicos" description="Crea el primero usando el formulario." />
+            <EmptyState icon={Stethoscope} title="Sin psicólogos/as" description="Crea el primero usando el formulario." />
           ) : (
             <ul className="divide-y divide-ink-100">
               {doctors.map((d) => (
                 <li key={d.id} className="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
                   <Avatar name={`${d.user.first_name} ${d.user.last_name}`} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-ink-900 text-sm truncate">Dr(a). {d.user.first_name} {d.user.last_name}</div>
+                    <div className="font-semibold text-ink-900 text-sm truncate">Ps. {d.user.first_name} {d.user.last_name}</div>
                     <div className="text-xs text-ink-500 truncate">{d.user.email}</div>
                   </div>
                   <Badge tone="brand">{d.specialty.name}</Badge>

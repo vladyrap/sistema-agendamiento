@@ -16,7 +16,7 @@ from app.schemas.availability import (
 )
 from app.api.deps import get_current_user, require_admin, require_doctor
 
-router = APIRouter(prefix="/doctors", tags=["Médicos"])
+router = APIRouter(prefix="/doctors", tags=["Psicólogos"])
 
 
 @router.get("/", response_model=List[DoctorListResponse])
@@ -58,7 +58,7 @@ def get_my_doctor_profile(
         .first()
     )
     if not doctor:
-        raise HTTPException(status_code=404, detail="No tienes un perfil de médico asociado")
+        raise HTTPException(status_code=404, detail="No tienes un perfil de psicólogo/a asociado")
     return doctor
 
 
@@ -75,7 +75,7 @@ def get_doctor(doctor_id: int, db: Session = Depends(get_db)):
         .first()
     )
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     return doctor
 
 
@@ -107,7 +107,7 @@ def update_doctor(
 ):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Sin permisos")
     for key, value in data.model_dump(exclude_none=True).items():
@@ -123,7 +123,7 @@ def update_doctor(
 def get_doctor_availability(doctor_id: int, db: Session = Depends(get_db)):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     return (
         db.query(DoctorAvailability)
         .filter(DoctorAvailability.doctor_id == doctor_id, DoctorAvailability.is_active == True)
@@ -140,7 +140,7 @@ def set_doctor_availability(
 ):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Sin permisos")
 
@@ -198,7 +198,7 @@ def delete_doctor_availability(
 ):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Sin permisos")
     avail = (
@@ -230,7 +230,7 @@ def get_available_slots(
 
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
 
     # Día completo bloqueado por ausencia
     block = (

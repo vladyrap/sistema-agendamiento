@@ -150,7 +150,7 @@ export default function MyAppointments() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-ink-900">Dr(a). {fullName}</span>
+                        <span className="font-semibold text-ink-900">Ps. {fullName}</span>
                         <StatusBadge status={a.status} />
                         {a.payment_status === 'pending' && (
                           <Badge tone="warning"><AlertCircle className="w-3 h-3" /> Pago pendiente</Badge>
@@ -234,7 +234,7 @@ export default function MyAppointments() {
               <Card key={w.id} className="p-4 flex items-center gap-3">
                 <Avatar name={fullName} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-ink-900">Dr(a). {fullName}</div>
+                  <div className="text-sm font-semibold text-ink-900">Ps. {fullName}</div>
                   <div className="text-xs text-ink-500 tabular-nums">
                     {format(parseISO(w.desired_from), "d MMM", { locale: es })} – {format(parseISO(w.desired_to), "d MMM yyyy", { locale: es })}
                   </div>

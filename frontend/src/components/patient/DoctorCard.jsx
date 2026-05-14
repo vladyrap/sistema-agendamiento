@@ -28,7 +28,7 @@ export function DoctorCard({ doctor }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-[15px] font-semibold text-ink-900 tracking-tight truncate">
-                Dr(a). {fullName}
+                Ps. {fullName}
               </h3>
               <ArrowUpRight className="w-4 h-4 text-ink-400 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-600 shrink-0" strokeWidth={2} />
             </div>

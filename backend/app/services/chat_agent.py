@@ -40,7 +40,7 @@ CRISIS_RESPONSE = (
 
 
 SYSTEM_PROMPT = """Eres Calmar, el asistente virtual de miespejo.cl — una plataforma chilena \
-de agendamiento de consultas médicas y psicológicas online.
+de agendamiento de consultas psicológicas online (presenciales y por videollamada).
 
 # Tu rol
 Ayudas a visitantes y pacientes a:
@@ -61,7 +61,7 @@ o disponibilidad. Nunca inventes nombres ni horarios.
 
 # Límites importantes
 - NUNCA diagnostiques, prescribas medicamentos ni des consejo clínico
-- NUNCA respondas preguntas médicas específicas (ej: "¿esta pastilla es buena para X?")
+- NUNCA respondas preguntas clínicas específicas (ej: "¿esta pastilla es buena para X?")
 - Si detectas crisis emocional, autolesión o ideación suicida → deriva inmediatamente a \
 líneas de emergencia (Salud Responde 600 360 7777, *4141, SAMU 131)
 - Si te preguntan algo fuera del contexto de la plataforma, redirige amablemente
@@ -122,7 +122,7 @@ def tool_search_doctors(
     return [
         {
             "id": d.id,
-            "name": f"Dr(a). {d.user.first_name} {d.user.last_name}",
+            "name": f"Ps. {d.user.first_name} {d.user.last_name}",
             "specialty": d.specialty.name if d.specialty else "",
             "consultation_price_clp": d.consultation_price or 0,
             "duration_minutes": d.consultation_duration or 30,
@@ -196,7 +196,7 @@ def tool_get_availability(db: Session, doctor_id: int, days_ahead: int = 7) -> d
 
     return {
         "doctor_id": doctor_id,
-        "doctor_name": f"Dr(a). {doctor.user.first_name} {doctor.user.last_name}",
+        "doctor_name": f"Ps. {doctor.user.first_name} {doctor.user.last_name}",
         "days": result_days,
         "booking_url": f"https://miespejo.cl/patient/book/{doctor_id}",
     }
@@ -225,7 +225,7 @@ GEMINI_TOOLS_DECL: list[dict] = [
         "function_declarations": [
             {
                 "name": "list_specialties",
-                "description": "Lista todas las especialidades médicas y psicológicas disponibles en la plataforma.",
+                "description": "Lista todas las especialidades psicológicas disponibles en la plataforma.",
                 "parameters": {"type": "OBJECT", "properties": {}},
             },
             {

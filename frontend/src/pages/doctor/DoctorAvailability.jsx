@@ -44,14 +44,14 @@ export default function DoctorAvailability() {
         ])
       })
       .catch((err) => {
-        if (err.response?.status !== 404) toast.error('Error cargando perfil de médico')
+        if (err.response?.status !== 404) toast.error('Error cargando perfil de psicólogo/a')
       })
       .finally(() => setLoading(false))
   }, [])
 
   const handleAdd = async (e) => {
     e.preventDefault()
-    if (!doctorId) return toast.error('Perfil de médico no encontrado')
+    if (!doctorId) return toast.error('Perfil de psicólogo/a no encontrado')
 
     // Validación local: hora inicio < hora fin
     if (form.start_time >= form.end_time) {

@@ -5,7 +5,7 @@ import { AppShell } from '../../components/layout/AppShell'
 const links = [
   { to: '/admin',                 icon: LayoutDashboard, label: 'Dashboard',     end: true },
   { to: '/admin/users',           icon: Users,           label: 'Usuarios' },
-  { to: '/admin/doctors',         icon: Stethoscope,     label: 'Médicos' },
+  { to: '/admin/doctors',         icon: Stethoscope,     label: 'Psicólogos/as' },
   { to: '/admin/receptionists',   icon: ConciergeBell,   label: 'Recepcionistas' },
   { to: '/admin/appointments',    icon: CalendarDays,    label: 'Citas' },
   { to: '/admin/specialties',     icon: Tag,             label: 'Especialidades' },

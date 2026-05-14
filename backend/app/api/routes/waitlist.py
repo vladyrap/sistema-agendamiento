@@ -23,7 +23,7 @@ def join_waitlist(
         raise HTTPException(status_code=400, detail="Rango de fechas inválido")
 
     if not db.query(Doctor).filter(Doctor.id == data.doctor_id, Doctor.is_active == True).first():
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
 
     # Evitar duplicados pendientes para el mismo paciente+médico
     existing = db.query(Waitlist).filter(

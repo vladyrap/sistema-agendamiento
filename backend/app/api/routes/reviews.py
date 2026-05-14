@@ -54,7 +54,7 @@ def create_review(
 @router.get("/doctor/{doctor_id}", response_model=List[ReviewResponse])
 def list_doctor_reviews(doctor_id: int, db: Session = Depends(get_db)):
     if not db.query(Doctor).filter(Doctor.id == doctor_id).first():
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
     return (
         db.query(Review)
         .options(joinedload(Review.patient))

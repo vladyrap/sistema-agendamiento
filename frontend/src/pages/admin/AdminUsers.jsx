@@ -20,13 +20,13 @@ import { fadeInUp } from '../../lib/motion'
 const roles = [
   { id: '',        label: 'Todos' },
   { id: 'patient', label: 'Pacientes' },
-  { id: 'doctor',  label: 'Médicos' },
+  { id: 'doctor',  label: 'Psicólogos/as' },
   { id: 'admin',   label: 'Admins' },
 ]
 
 const roleConfig = {
   patient: { label: 'Paciente',      tone: 'brand'   },
-  doctor:  { label: 'Médico',        tone: 'success' },
+  doctor:  { label: 'Psicólogo/a',   tone: 'success' },
   admin:   { label: 'Administrador', tone: 'warning' },
 }
 

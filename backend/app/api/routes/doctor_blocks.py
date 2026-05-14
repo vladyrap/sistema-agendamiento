@@ -16,10 +16,10 @@ router = APIRouter(prefix="/doctor-blocks", tags=["Bloques de ausencia"])
 
 def _doctor_for_user(db: Session, user: User) -> Doctor:
     if user.role != UserRole.doctor:
-        raise HTTPException(status_code=403, detail="Solo médicos pueden gestionar sus ausencias")
+        raise HTTPException(status_code=403, detail="Solo psicólogos/as pueden gestionar sus ausencias")
     doctor = db.query(Doctor).filter(Doctor.user_id == user.id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+        raise HTTPException(status_code=404, detail="Perfil de psicólogo/a no encontrado")
     return doctor
 
 

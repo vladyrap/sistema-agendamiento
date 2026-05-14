@@ -9,15 +9,15 @@ from app.models.patient_note import PatientNote
 from app.schemas.patient_note import PatientNoteResponse, PatientNoteUpdate
 from app.api.deps import get_current_user
 
-router = APIRouter(prefix="/patient-notes", tags=["Notas médicas"])
+router = APIRouter(prefix="/patient-notes", tags=["Notas clínicas"])
 
 
 def _doctor_for_user(db: Session, user: User) -> Doctor:
     if user.role != UserRole.doctor:
-        raise HTTPException(status_code=403, detail="Solo médicos pueden gestionar notas privadas")
+        raise HTTPException(status_code=403, detail="Solo psicólogos/as pueden gestionar notas privadas")
     doctor = db.query(Doctor).filter(Doctor.user_id == user.id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+        raise HTTPException(status_code=404, detail="Perfil de psicólogo/a no encontrado")
     return doctor
 
 

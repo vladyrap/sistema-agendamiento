@@ -398,7 +398,7 @@ def use_credit_for_appointment(db: Session, user_id: int, appointment_id: int, a
         user_id=user_id,
         amount_clp=-use,
         type="appointment_used",
-        description="Uso de saldo para cita médica",
+        description="Uso de saldo para sesión psicológica",
         appointment_id=appointment_id,
         balance_after=uc.balance_clp,
     )

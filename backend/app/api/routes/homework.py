@@ -22,7 +22,7 @@ def _serialize(h: HomeworkAssignment) -> HomeworkResponse:
     doc_name = None
     doc_spec = None
     if h.doctor and h.doctor.user:
-        doc_name = f"Dr(a). {h.doctor.user.first_name} {h.doctor.user.last_name}"
+        doc_name = f"Ps. {h.doctor.user.first_name} {h.doctor.user.last_name}"
     if h.doctor and h.doctor.specialty:
         doc_spec = h.doctor.specialty.name
     pat_name = None
@@ -93,7 +93,7 @@ def create_homework(
         "to_email": patient.email,
         "to_phone": patient.phone,
         "to_name": f"{patient.first_name} {patient.last_name}",
-        "doctor_name": f"Dr(a). {current_user.first_name} {current_user.last_name}",
+        "doctor_name": f"Ps. {current_user.first_name} {current_user.last_name}",
         "homework_title": data.title,
         "homework_due_date": str(data.due_date) if data.due_date else "",
     })

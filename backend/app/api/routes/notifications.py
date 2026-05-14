@@ -88,7 +88,7 @@ def _patient_notifications(db: Session, user: User) -> List[NotificationItem]:
     if next_appt:
         days_to = (next_appt.appointment_date - today).days
         doc = next_appt.doctor
-        doc_name = f"Dr(a). {doc.user.first_name} {doc.user.last_name}" if doc and doc.user else "tu profesional"
+        doc_name = f"Ps. {doc.user.first_name} {doc.user.last_name}" if doc and doc.user else "tu profesional"
         if days_to == 0:
             timing = f"hoy a las {next_appt.start_time.strftime('%H:%M')}"
             priority = 100

@@ -79,11 +79,11 @@ def _notify_waitlist(db: Session, doctor_id: int, freed_date) -> None:
         "to_phone": entry.patient.phone if entry.patient else None,
         "to_name": f"{entry.patient.first_name} {entry.patient.last_name}" if entry.patient else "",
         "counterpart_name": (
-            f"Dr(a). {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
+            f"Ps. {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
             if entry.doctor and entry.doctor.user else ""
         ),
         "doctor_name": (
-            f"Dr(a). {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
+            f"Ps. {entry.doctor.user.first_name} {entry.doctor.user.last_name}"
             if entry.doctor and entry.doctor.user else ""
         ),
         "patient_name": f"{entry.patient.first_name} {entry.patient.last_name}" if entry.patient else "",
@@ -100,7 +100,7 @@ def _notification_payload(appt: Appointment, recipient: str = "patient") -> dict
     """
     patient_name = f"{appt.patient.first_name} {appt.patient.last_name}" if appt.patient else ""
     doctor_name = (
-        f"Dr(a). {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
+        f"Ps. {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
         if appt.doctor and appt.doctor.user else ""
     )
 
@@ -154,7 +154,7 @@ def create_appointment(
 ):
     doctor = db.query(Doctor).filter(Doctor.id == data.doctor_id, Doctor.is_active == True).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        raise HTTPException(status_code=404, detail="Psicólogo/a no encontrado/a")
 
     day_of_week = data.appointment_date.weekday()
     availability = (
@@ -167,7 +167,7 @@ def create_appointment(
         .first()
     )
     if not availability:
-        raise HTTPException(status_code=400, detail="El médico no atiende ese día")
+        raise HTTPException(status_code=400, detail="El psicólogo/a no atiende ese día")
 
     if not (availability.start_time <= data.start_time < availability.end_time):
         raise HTTPException(status_code=400, detail="Hora fuera del horario de atención")
@@ -201,7 +201,7 @@ def create_appointment(
         DoctorBlock.end_date >= data.appointment_date,
     ).first()
     if blocked:
-        raise HTTPException(status_code=400, detail="El médico no atiende ese día (ausencia programada)")
+        raise HTTPException(status_code=400, detail="El psicólogo/a no atiende ese día (ausencia programada)")
 
     appt = Appointment(
         patient_id=target_patient_id,
@@ -312,7 +312,7 @@ def create_appointment(
             logger.exception("appointment.credit_apply_failed")
 
     if price > 0 and payments_service.is_enabled() and covered_by_company is None:
-        title = f"Consulta con Dr(a). {doctor.user.first_name} {doctor.user.last_name}"
+        title = f"Consulta con Ps. {doctor.user.first_name} {doctor.user.last_name}"
         result = payments_service.create_preference(
             appointment_id=appt.id,
             amount=price,
@@ -461,7 +461,7 @@ def reschedule_appointment(
         .first()
     )
     if not availability:
-        raise HTTPException(status_code=400, detail="El médico no atiende ese día")
+        raise HTTPException(status_code=400, detail="El psicólogo/a no atiende ese día")
     if not (availability.start_time <= data.start_time < availability.end_time):
         raise HTTPException(status_code=400, detail="Hora fuera del horario de atención")
 
@@ -561,12 +561,12 @@ def cancel_day(
     elif current_user.role in (UserRole.admin, UserRole.receptionist):
         # Para staff necesitamos saber qué médico — usamos el primer doctor con citas ese día.
         # En MVP: solo médicos pueden cancelar su día desde aquí.
-        raise HTTPException(status_code=400, detail="Solo el médico puede cancelar su día desde este endpoint")
+        raise HTTPException(status_code=400, detail="Solo el psicólogo/a puede cancelar su día desde este endpoint")
     else:
         raise HTTPException(status_code=403, detail="Sin permisos")
 
     if not doctor:
-        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+        raise HTTPException(status_code=404, detail="Perfil de psicólogo/a no encontrado")
 
     appts = db.query(Appointment).filter(
         Appointment.doctor_id == doctor.id,
@@ -576,7 +576,7 @@ def cancel_day(
     cancelled = 0
     for a in appts:
         a.status = AppointmentStatus.cancelled
-        a.cancellation_reason = data.reason or "Día cancelado por el médico"
+        a.cancellation_reason = data.reason or "Día cancelado por el psicólogo/a"
         cancelled += 1
     if cancelled:
         db.commit()
@@ -634,7 +634,7 @@ def get_meeting_link(
         "available": True,
         "room_name": room_name,
         "room_url": f"https://meet.jit.si/{room_name}",
-        "subject": f"Cita con Dr(a). {appt.doctor.user.first_name} {appt.doctor.user.last_name}",
+        "subject": f"Cita con Ps. {appt.doctor.user.first_name} {appt.doctor.user.last_name}",
         "minutes_until_start": minutes_until,
     }
 
@@ -675,8 +675,8 @@ def appointment_ics(
     end_utc = end_local.astimezone(tz_utc).strftime("%Y%m%dT%H%M%SZ")
     stamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
 
-    doctor_name = f"Dr(a). {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
-    summary = f"Cita médica con {doctor_name}"
+    doctor_name = f"Ps. {appt.doctor.user.first_name} {appt.doctor.user.last_name}"
+    summary = f"Cita psicológica con {doctor_name}"
     description_parts = [f"Especialidad: {appt.doctor.specialty.name}"]
     if appt.reason:
         description_parts.append(f"Motivo: {appt.reason}")

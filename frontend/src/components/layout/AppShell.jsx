@@ -8,7 +8,7 @@ import { Button } from '../ui/Button'
 import { cn } from '../../lib/cn'
 import NotificationsBell from '../NotificationsBell'
 
-const roleLabels = { admin: 'Administrador', doctor: 'Profesional', patient: 'Paciente', receptionist: 'Recepcionista' }
+const roleLabels = { admin: 'Administrador', doctor: 'Psicólogo/a', patient: 'Paciente', receptionist: 'Recepcionista' }
 
 export function AppShell({ links, basePath, brandTag }) {
   const { user, logout } = useAuth()

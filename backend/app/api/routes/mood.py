@@ -220,10 +220,10 @@ def doctor_feed(
     Solo incluye pacientes con quien el doctor ha tenido (o tiene) citas.
     """
     if current_user.role != UserRole.doctor:
-        raise HTTPException(status_code=403, detail="Solo médicos")
+        raise HTTPException(status_code=403, detail="Solo psicólogos/as")
     doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+        raise HTTPException(status_code=404, detail="Perfil de psicólogo/a no encontrado")
 
     since = date_type.today() - timedelta(days=days)
 

@@ -56,7 +56,7 @@ def _serialize(a: QuestionnaireAssignment) -> AssignmentResponse:
     q_meta = catalog.get_questionnaire(a.code)
     doc_name = None
     if a.doctor and a.doctor.user:
-        doc_name = f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+        doc_name = f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
     pat_name = None
     if a.patient:
         pat_name = f"{a.patient.first_name} {a.patient.last_name}"
@@ -156,7 +156,7 @@ def create_assignment(
         "to_email": patient.email,
         "to_phone": patient.phone,
         "to_name": f"{patient.first_name} {patient.last_name}",
-        "doctor_name": f"Dr(a). {current_user.first_name} {current_user.last_name}",
+        "doctor_name": f"Ps. {current_user.first_name} {current_user.last_name}",
         "questionnaire_name": q_meta["name"],
         "questionnaire_short": q_meta["short_name"],
         "due_date": str(data.due_date) if data.due_date else "",

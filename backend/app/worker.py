@@ -315,7 +315,7 @@ def reminders_job():
                 continue
             patient_name = f"{a.patient.first_name} {a.patient.last_name}" if a.patient else ""
             doctor_name = (
-                f"Dr(a). {a.doctor.user.first_name} {a.doctor.user.last_name}"
+                f"Ps. {a.doctor.user.first_name} {a.doctor.user.last_name}"
                 if a.doctor and a.doctor.user else ""
             )
             common = {

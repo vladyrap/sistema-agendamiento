@@ -47,7 +47,7 @@ export default function AdminDashboard() {
         {[
           { label: 'Usuarios',  value: stats.total_users,        icon: Users,        hue: 'brand'    },
           { label: 'Pacientes', value: stats.total_patients,     icon: UserCircle,   hue: 'wellness' },
-          { label: 'Médicos',   value: stats.total_doctors,      icon: Stethoscope,  hue: 'amber'    },
+          { label: 'Psicólogos/as', value: stats.total_doctors,  icon: Stethoscope,  hue: 'amber'    },
           { label: 'Citas',     value: stats.total_appointments, icon: CalendarDays, hue: 'rose'     },
         ].map((s) => (
           <motion.div key={s.label} variants={staggerItem}>

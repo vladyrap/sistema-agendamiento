@@ -99,7 +99,7 @@ export default function DoctorOwnProfile() {
           <div className="flex items-center gap-4">
             <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="xl" />
             <div className="flex-1">
-              <div className="text-lg font-semibold text-ink-900">Dr(a). {user?.first_name} {user?.last_name}</div>
+              <div className="text-lg font-semibold text-ink-900">Ps. {user?.first_name} {user?.last_name}</div>
               <div className="text-sm text-brand-600 font-medium flex items-center gap-1.5">
                 <Stethoscope className="w-3.5 h-3.5" /> {doctor.specialty.name}
               </div>

@@ -89,7 +89,7 @@ export default function DoctorSchedule() {
   const handleCancel = async (id) => {
     if (!window.confirm('¿Cancelar esta cita?')) return
     try {
-      await appointmentsApi.cancel(id, { cancellation_reason: 'Cancelado por el médico' })
+      await appointmentsApi.cancel(id, { cancellation_reason: 'Cancelado por el psicólogo/a' })
       toast.success('Cita cancelada')
       load()
     } catch (err) {

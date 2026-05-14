@@ -32,7 +32,7 @@ const features = [
 
 const testimonials = [
   { name: 'Camila Reyes',     rol: 'Paciente', text: 'Pude agendar una psicóloga el mismo día. La experiencia fue impecable, súper humana.' },
-  { name: 'Diego Fernández',  rol: 'Paciente', text: 'Reservar con mi médico nunca había sido tan rápido. Y el recordatorio salvó mi semana.' },
+  { name: 'Diego Fernández',  rol: 'Paciente', text: 'Reservar con mi psicólogo nunca había sido tan rápido. Y el recordatorio salvó mi semana.' },
   { name: 'Valentina Soto',   rol: 'Paciente', text: 'La interfaz es hermosa y todo está donde lo busco. Se nota el cuidado en cada detalle.' },
 ]
 
@@ -184,7 +184,7 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 1.1 }}
               className="text-lg md:text-xl text-white/55 mt-8 max-w-2xl mx-auto leading-relaxed text-pretty"
             >
-              Reserva con médicos y psicólogos verificados en minutos.
+              Reserva con psicólogos/as verificados en minutos.
               Presencial o por videollamada, sin esperas, sin papeleo.
             </motion.p>
 
@@ -250,7 +250,7 @@ export default function LandingPage() {
                       <div className="flex items-center gap-3">
                         <Avatar name={c.name} size="md" />
                         <div>
-                          <div className="text-sm font-semibold text-white">Dr(a). {c.name}</div>
+                          <div className="text-sm font-semibold text-white">Ps. {c.name}</div>
                           <div className="text-xs text-fuchsia-300 font-medium">{c.specialty}</div>
                         </div>
                       </div>

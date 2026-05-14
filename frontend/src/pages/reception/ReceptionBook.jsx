@@ -208,7 +208,7 @@ export default function ReceptionBook() {
             </div>
 
             {doctors.length === 0 ? (
-              <p className="text-sm text-ink-500 text-center py-8">Sin médicos en esta especialidad</p>
+              <p className="text-sm text-ink-500 text-center py-8">Sin psicólogos/as en esta especialidad</p>
             ) : (
               <ul className="grid sm:grid-cols-2 gap-2">
                 {doctors.map((d) => {
@@ -222,7 +222,7 @@ export default function ReceptionBook() {
                       >
                         <Avatar name={`${d.user.first_name} ${d.user.last_name}`} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm text-ink-900 truncate">Dr(a). {d.user.first_name} {d.user.last_name}</div>
+                          <div className="font-semibold text-sm text-ink-900 truncate">Ps. {d.user.first_name} {d.user.last_name}</div>
                           <div className="flex items-center gap-1.5 text-xs text-brand-600 mt-0.5">
                             <Icon className="w-3 h-3" /> {d.specialty.name}
                           </div>
@@ -244,7 +244,7 @@ export default function ReceptionBook() {
         <div className="space-y-4">
           <Selected
             label="Profesional"
-            primary={`Dr(a). ${selectedDoctor.user.first_name} ${selectedDoctor.user.last_name}`}
+            primary={`Ps. ${selectedDoctor.user.first_name} ${selectedDoctor.user.last_name}`}
             secondary={selectedDoctor.specialty.name}
             onChange={() => setStep(1)}
           />
@@ -339,7 +339,7 @@ export default function ReceptionBook() {
             <div className="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-3">Resumen</div>
             <div className="space-y-3 pb-5 border-b border-ink-100 text-sm">
               <Row label="Paciente"     value={`${selectedPatient.first_name} ${selectedPatient.last_name}`} icon={User} />
-              <Row label="Profesional"  value={`Dr(a). ${selectedDoctor.user.first_name} ${selectedDoctor.user.last_name}`} icon={Stethoscope} />
+              <Row label="Profesional"  value={`Ps. ${selectedDoctor.user.first_name} ${selectedDoctor.user.last_name}`} icon={Stethoscope} />
               <Row label="Especialidad" value={selectedDoctor.specialty.name} />
               <Row label="Fecha"        value={format(selectedDate, "d MMM yyyy", { locale: es })} icon={Calendar} />
               <Row label="Hora"         value={selectedSlot.start_time} icon={Clock} highlight />
@@ -355,7 +355,7 @@ export default function ReceptionBook() {
 
             <div className="mb-5">
               <Label>Motivo (opcional)</Label>
-              <Textarea rows={2} placeholder="Anotación para el médico..." value={reason} onChange={(e) => setReason(e.target.value)} />
+              <Textarea rows={2} placeholder="Anotación para el psicólogo/a..." value={reason} onChange={(e) => setReason(e.target.value)} />
             </div>
 
             <div className="flex gap-2">
