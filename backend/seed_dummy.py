@@ -3,13 +3,17 @@
 Uso:
     docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T backend python seed_dummy.py
 
-Crea:
+Crea (o actualiza password de) :
   - 10 psicólogos con fotos (randomuser.me), bios, precios, disponibilidad
   - 20 pacientes con fotos, edades variadas, datos de contacto chilenos
 
-Idempotente: si los emails ya existen, no los re-crea.
+Si el user ya existe, se actualiza su password al valor uniforme `Inicio01..`.
 Imprime al final la lista completa de credenciales.
 """
+
+# Password única para TODOS los users dummy. Cambia este valor para regenerar.
+DUMMY_PASSWORD = "Inicio01.."
+
 from datetime import date, time, timedelta
 import random
 
@@ -119,22 +123,34 @@ try:
 
     created_psychologists = []
     created_patients = []
+    password_hash_dummy = get_password_hash(DUMMY_PASSWORD)
 
     # ─── 10 Psicólogos ────────────────────────────────────────────────────
-    print("\nCreando psicólogos…")
+    print("\nCreando/actualizando psicólogos…")
     for i, (first, last, gender, photo_n, _spec_kw, license_n, price, duration, bio) in enumerate(PSYCHOLOGISTS):
         email = email_from_name(first, last, "calmar.cl")
         existing = db.query(User).filter(User.email == email).first()
         if existing:
-            print(f"  · {first} {last} ya existe — skip")
+            # Reset de password + foto a los valores del seed
+            existing.password_hash = password_hash_dummy
+            if not existing.photo_url:
+                existing.photo_url = photo_url(gender, photo_n)
+            created_psychologists.append({
+                "name": f"{first} {last}",
+                "email": email,
+                "password": DUMMY_PASSWORD,
+                "license": existing.rut or "-",
+                "price": "-",
+                "status": "actualizado",
+            })
+            print(f"  ↻ {first} {last} ya existía — password reseteada")
             continue
 
-        password = f"psi{i+1:02d}calmar"  # ej: psi01calmar, psi02calmar...
         rut = chilean_rut(15000000 + i * 137)
 
         user = User(
             email=email,
-            password_hash=get_password_hash(password),
+            password_hash=password_hash_dummy,
             first_name=first,
             last_name=last,
             phone=f"+56 9 {7000 + i*111:04d} {1000 + i*73:04d}",
@@ -171,28 +187,39 @@ try:
         created_psychologists.append({
             "name": f"{first} {last}",
             "email": email,
-            "password": password,
+            "password": DUMMY_PASSWORD,
             "license": license_n,
             "price": price,
+            "status": "creado",
         })
         print(f"  ✓ {first} {last} ({email})")
 
     # ─── 20 Pacientes ─────────────────────────────────────────────────────
-    print("\nCreando pacientes…")
+    print("\nCreando/actualizando pacientes…")
     for i, (first, last, gender, photo_n, age, phone_last4, hi) in enumerate(PATIENTS):
         email = email_from_name(first, last, "paciente.cl")
         existing = db.query(User).filter(User.email == email).first()
         if existing:
-            print(f"  · {first} {last} ya existe — skip")
+            existing.password_hash = password_hash_dummy
+            if not existing.photo_url:
+                existing.photo_url = photo_url(gender, photo_n)
+            created_patients.append({
+                "name": f"{first} {last}",
+                "email": email,
+                "password": DUMMY_PASSWORD,
+                "age": age,
+                "hi": existing.health_insurance or hi,
+                "status": "actualizado",
+            })
+            print(f"  ↻ {first} {last} ya existía — password reseteada")
             continue
 
-        password = f"pac{i+1:02d}calmar"  # ej: pac01calmar, pac02calmar...
         rut = chilean_rut(20000000 + i * 91)
         birth_year = date.today().year - age
 
         user = User(
             email=email,
-            password_hash=get_password_hash(password),
+            password_hash=password_hash_dummy,
             first_name=first,
             last_name=last,
             phone=f"+56 9 {5000 + i*43:04d} {phone_last4}",
@@ -210,9 +237,10 @@ try:
         created_patients.append({
             "name": f"{first} {last}",
             "email": email,
-            "password": password,
+            "password": DUMMY_PASSWORD,
             "age": age,
             "hi": hi,
+            "status": "creado",
         })
         print(f"  ✓ {first} {last} ({email})")
 
@@ -221,30 +249,34 @@ try:
     # ─── Resumen final con credenciales ────────────────────────────────────
     print()
     print("═" * 70)
-    print(f"  ✓ {len(created_psychologists)} psicólogos creados")
-    print(f"  ✓ {len(created_patients)} pacientes creados")
+    print(f"  ✓ {len(created_psychologists)} psicólogos")
+    print(f"  ✓ {len(created_patients)} pacientes")
+    print(f"  🔑 TODOS los users tienen la misma password: {DUMMY_PASSWORD}")
     print("═" * 70)
     print()
 
     if created_psychologists:
-        print("PSICÓLOGOS — credenciales de acceso:")
+        print("PSICÓLOGOS:")
         print("─" * 70)
-        print(f"{'Email':<42} {'Password':<16} {'Precio':>10}")
+        print(f"{'#':<3} {'Email':<42} {'Estado':<12}")
         print("─" * 70)
-        for p in created_psychologists:
-            print(f"{p['email']:<42} {p['password']:<16} ${p['price']:>9,}")
+        for i, p in enumerate(created_psychologists, 1):
+            print(f"{i:<3} {p['email']:<42} {p.get('status','-'):<12}")
         print()
 
     if created_patients:
-        print("PACIENTES — credenciales de acceso:")
+        print("PACIENTES:")
         print("─" * 70)
-        print(f"{'Email':<44} {'Password':<14} {'Edad':>5}")
+        print(f"{'#':<3} {'Email':<44} {'Edad':>5}  {'Estado':<12}")
         print("─" * 70)
-        for p in created_patients:
-            print(f"{p['email']:<44} {p['password']:<14} {p['age']:>5}")
+        for i, p in enumerate(created_patients, 1):
+            print(f"{i:<3} {p['email']:<44} {p['age']:>5}  {p.get('status','-'):<12}")
         print()
 
-    print("Recordá: estos son usuarios de prueba con passwords débiles. Rotalas o desactivá las cuentas antes de pasar a producción real.")
+    print(f"🔑 Password de TODOS los usuarios dummy:  {DUMMY_PASSWORD}")
+    print()
+    print("Recordá: estos son usuarios de prueba con password débil.")
+    print("Antes de producción real, desactivá estas cuentas o cambiales la password.")
     print()
 finally:
     db.close()

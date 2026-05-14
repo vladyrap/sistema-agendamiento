@@ -53,7 +53,7 @@ try:
     if not db.query(User).filter(User.email == "admin@clinica.cl").first():
         admin = User(
             email="admin@clinica.cl",
-            password_hash=get_password_hash("admin123"),
+            password_hash=get_password_hash("Inicio01.."),
             first_name="Admin",
             last_name="Sistema",
             role=UserRole.admin,
@@ -63,7 +63,7 @@ try:
     if not db.query(User).filter(User.email == "recepcion@clinica.cl").first():
         receptionist = User(
             email="recepcion@clinica.cl",
-            password_hash=get_password_hash("recepcion123"),
+            password_hash=get_password_hash("Inicio01.."),
             first_name="Camila",
             last_name="Soto",
             phone="+56 9 5555 1234",
@@ -74,7 +74,7 @@ try:
     if not db.query(User).filter(User.email == "paciente@ejemplo.cl").first():
         patient = User(
             email="paciente@ejemplo.cl",
-            password_hash=get_password_hash("paciente123"),
+            password_hash=get_password_hash("Inicio01.."),
             first_name="Juan",
             last_name="Pérez",
             phone="+56 9 8765 4321",
@@ -86,7 +86,7 @@ try:
     if not db.query(User).filter(User.email == "tutor@ejemplo.cl").first():
         tutor_user = User(
             email="tutor@ejemplo.cl",
-            password_hash=get_password_hash("tutor123"),
+            password_hash=get_password_hash("Inicio01.."),
             first_name="Marta",
             last_name="Pérez",
             phone="+56 9 5555 9876",
@@ -122,7 +122,7 @@ try:
     if not db.query(User).filter(User.email == "dr.garcia@clinica.cl").first():
         doctor_user = User(
             email="dr.garcia@clinica.cl",
-            password_hash=get_password_hash("doctor123"),
+            password_hash=get_password_hash("Inicio01.."),
             first_name="María",
             last_name="García",
             phone="+56 9 1234 5678",
@@ -155,11 +155,13 @@ try:
 
     db.commit()
     print("Seed completado exitosamente.")
-    print("Credenciales de prueba:")
-    print("  Admin:        admin@clinica.cl / admin123")
-    print("  Médico:       dr.garcia@clinica.cl / doctor123")
-    print("  Recepción:    recepcion@clinica.cl / recepcion123")
-    print("  Paciente:     paciente@ejemplo.cl / paciente123")
-    print("  Tutor:        tutor@ejemplo.cl / tutor123")
+    print("Credenciales de prueba (TODAS la misma password):")
+    print("  Password única: Inicio01..")
+    print()
+    print("  Admin:        admin@clinica.cl")
+    print("  Médico:       dr.garcia@clinica.cl")
+    print("  Recepción:    recepcion@clinica.cl")
+    print("  Paciente:     paciente@ejemplo.cl")
+    print("  Tutor:        tutor@ejemplo.cl")
 finally:
     db.close()

@@ -136,10 +136,152 @@ WHO5 = {
 }
 
 
+# ─── AUDIT-C ──────────────────────────────────────────────────────────────
+# OMS — Versión corta del AUDIT, 3 items. Screening rápido de consumo de riesgo.
+AUDITC = {
+    "code": "auditc",
+    "name": "AUDIT-C — Consumo de alcohol (screening)",
+    "short_name": "AUDIT-C",
+    "description": "Screening rápido de consumo riesgoso de alcohol. 3 preguntas, ~1 minuto.",
+    "duration_minutes": 1,
+    "scoring_note": "Score 0-12. Cut-off: ≥4 (hombres) o ≥3 (mujeres) sugiere consumo de riesgo.",
+    "frequency_recommendation": "Anual en consulta de salud general, o cuando se sospeche consumo problemático.",
+    "instructions": (
+        "Estas preguntas son sobre tu consumo de alcohol. Una 'bebida' equivale a "
+        "una copa de vino, un vaso de cerveza, o un trago corto (40 ml)."
+    ),
+    "scale_options": [
+        {"value": 0, "label": "Nunca / 1 ó 2 / Nunca"},
+        {"value": 1, "label": "Mensual o menos / 3 ó 4 / Menos de una vez al mes"},
+        {"value": 2, "label": "2-4 veces al mes / 5 ó 6 / Mensualmente"},
+        {"value": 3, "label": "2-3 veces a la semana / 7 a 9 / Semanalmente"},
+        {"value": 4, "label": "4 ó más veces a la semana / 10 ó más / A diario o casi"},
+    ],
+    "questions": [
+        "¿Con qué frecuencia consumes alguna bebida alcohólica?",
+        "¿Cuántas bebidas alcohólicas consumes en un día típico de consumo?",
+        "¿Con qué frecuencia tomas 6 o más bebidas alcohólicas en una sola ocasión?",
+    ],
+    "severity_thresholds": [
+        (0,  2,  "low_risk",        "Bajo riesgo",                "wellness", "Tu consumo aparece dentro de niveles seguros. Mantén la consciencia."),
+        (3,  4,  "moderate_risk",   "Consumo de riesgo",          "amber",    "Conviene conversar tu patrón de consumo con tu profesional."),
+        (5,  7,  "harmful",         "Consumo perjudicial",        "rose",     "Tu consumo puede estar afectando tu salud. Hablar con un profesional es prioritario."),
+        (8,  12, "probable_dep",    "Probable dependencia",       "rose",     "Recomendamos evaluación profesional especializada en consumo problemático."),
+    ],
+    "critical_question_index": None,
+    "critical_threshold": None,
+    "critical_message": None,
+}
+
+
+# ─── EPDS ─────────────────────────────────────────────────────────────────
+# Edinburgh Postnatal Depression Scale (Cox, Holden, Sagovsky, 1987)
+# Estándar del MINSAL Chile para control prenatal y postnatal.
+EPDS = {
+    "code": "epds",
+    "name": "EPDS — Depresión perinatal (Edinburgh)",
+    "short_name": "EPDS",
+    "description": "Detección de síntomas depresivos en el embarazo o post-parto. 10 preguntas, ~3 minutos.",
+    "duration_minutes": 3,
+    "scoring_note": "Score 0-30. Cut-off: ≥10 sugiere posible depresión, ≥13 probable depresión. Pregunta 10 (ideación) > 0 dispara alerta.",
+    "frequency_recommendation": "Una vez por trimestre durante el embarazo y al mes 2 y 6 post-parto. Sirve también para padres/parejas.",
+    "instructions": (
+        "Estás viviendo un embarazo o has sido madre/padre recientemente. "
+        "En los últimos 7 días, ¿cómo te has sentido? Elige la respuesta que más se acerque a tu experiencia."
+    ),
+    "scale_options": [
+        {"value": 0, "label": "Como siempre / Nunca / Sí, todo el tiempo"},
+        {"value": 1, "label": "No tanto como antes / Casi nunca / Sí, casi todo el tiempo"},
+        {"value": 2, "label": "Definitivamente menos / A veces / A veces"},
+        {"value": 3, "label": "No, casi nada / Casi todos los días / No, en absoluto"},
+    ],
+    "questions": [
+        "He podido reírme y ver el lado divertido de las cosas",
+        "He mirado el futuro con ilusión",
+        "Me he culpado innecesariamente cuando las cosas han salido mal",
+        "He estado ansiosa/o o preocupada/o sin motivo",
+        "He sentido miedo o pánico sin motivo justificado",
+        "Las cosas se me han venido encima — siento que no puedo con todo",
+        "Me he sentido tan infeliz que he tenido dificultad para dormir",
+        "Me he sentido triste o desgraciada/o",
+        "Me he sentido tan infeliz que he estado llorando",
+        "He tenido pensamientos de hacerme daño",
+    ],
+    "severity_thresholds": [
+        (0,  9,  "minimal",   "Sin riesgo aparente",        "wellness", "Tus respuestas no sugieren depresión perinatal. Mantén el autocuidado."),
+        (10, 12, "possible",  "Posible depresión",          "amber",    "Algunas señales preocupantes. Conviene una evaluación con tu profesional."),
+        (13, 30, "probable",  "Probable depresión perinatal","rose",    "Se recomienda evaluación profesional especializada en salud mental perinatal."),
+    ],
+    # Item 10 (índice 9) detecta ideación de hacerse daño
+    "critical_question_index": 9,
+    "critical_threshold": 1,
+    "critical_message": "Respuesta crítica: el paciente reportó pensamientos de hacerse daño en el EPDS.",
+}
+
+
+# ─── PCL-5 ────────────────────────────────────────────────────────────────
+# PTSD Checklist for DSM-5 (Weathers et al.) — Department of Veterans Affairs.
+PCL5 = {
+    "code": "pcl5",
+    "name": "PCL-5 — Síntomas de estrés postraumático",
+    "short_name": "PCL-5",
+    "description": "Evaluación de síntomas de TEPT (DSM-5). 20 preguntas, ~5 minutos.",
+    "duration_minutes": 5,
+    "scoring_note": "Score 0-80. Cut-off general: ≥33 sugiere probable TEPT.",
+    "frequency_recommendation": "Cada 4-6 semanas durante tratamiento de trauma.",
+    "instructions": (
+        "Piensa en un evento traumático que viviste o presenciaste (un accidente, "
+        "una agresión, una pérdida, una situación violenta, etc.). En el último mes, "
+        "¿cuánto te ha molestado cada uno de los siguientes problemas relacionados con ese evento?"
+    ),
+    "scale_options": [
+        {"value": 0, "label": "Nada"},
+        {"value": 1, "label": "Un poco"},
+        {"value": 2, "label": "Moderadamente"},
+        {"value": 3, "label": "Bastante"},
+        {"value": 4, "label": "Extremadamente"},
+    ],
+    "questions": [
+        "Recuerdos repetidos, perturbadores e involuntarios del evento",
+        "Sueños repetidos y perturbadores relacionados con el evento",
+        "Sentir o actuar de repente como si el evento estuviera volviendo a ocurrir (flashbacks)",
+        "Sentirse muy molesto/a cuando algo te recuerda el evento",
+        "Tener reacciones físicas fuertes cuando algo te recuerda el evento (sudor, taquicardia, etc.)",
+        "Evitar recuerdos, pensamientos o sentimientos relacionados con el evento",
+        "Evitar lugares, personas o actividades que te recuerden el evento",
+        "Dificultad para recordar partes importantes del evento",
+        "Creencias negativas fuertes sobre ti mismo, otras personas o el mundo",
+        "Culparte a ti mismo o a otros por el evento o por lo que pasó después",
+        "Sentir mucho miedo, horror, rabia, culpa o vergüenza",
+        "Pérdida de interés en actividades que antes disfrutabas",
+        "Sentirte distante o desconectado/a de los demás",
+        "Dificultad para experimentar sentimientos positivos",
+        "Comportamiento irritable, enojo o agresividad",
+        "Comportamiento imprudente o autodestructivo",
+        "Estar 'súper alerta', vigilante o en guardia",
+        "Sobresaltarse fácilmente",
+        "Dificultad para concentrarse",
+        "Problemas para conciliar o mantener el sueño",
+    ],
+    "severity_thresholds": [
+        (0,  17,  "minimal",  "Mínimo",            "wellness", "Sin síntomas significativos de TEPT."),
+        (18, 32,  "mild",     "Leve",              "wellness", "Algunos síntomas; conviene seguimiento."),
+        (33, 49,  "moderate", "Moderado (probable TEPT)", "amber", "Sugerimos evaluación clínica especializada."),
+        (50, 80,  "severe",   "Severo",            "rose",     "Síntomas severos. Tratamiento especializado en trauma es prioritario."),
+    ],
+    "critical_question_index": None,
+    "critical_threshold": None,
+    "critical_message": None,
+}
+
+
 CATALOG = {
-    "phq9": PHQ9,
-    "gad7": GAD7,
-    "who5": WHO5,
+    "phq9":   PHQ9,
+    "gad7":   GAD7,
+    "who5":   WHO5,
+    "auditc": AUDITC,
+    "epds":   EPDS,
+    "pcl5":   PCL5,
 }
 
 
