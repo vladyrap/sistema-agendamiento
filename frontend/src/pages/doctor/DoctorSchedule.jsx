@@ -37,7 +37,7 @@ export default function DoctorSchedule() {
   const [filter, setFilter] = useState('')
   const [historyPatient, setHistoryPatient] = useState(null)
   const [sessionAppt, setSessionAppt] = useState(null)
-  const [view, setView] = useState('list') // 'list' | 'week'
+  const [view, setView] = useState('week') // 'week' | 'list'
   const [cancelDayOpen, setCancelDayOpen] = useState(false)
   const [cancelDayForm, setCancelDayForm] = useState({ date: '', reason: '' })
   const [cancelDaySubmitting, setCancelDaySubmitting] = useState(false)
@@ -107,8 +107,8 @@ export default function DoctorSchedule() {
         <div className="flex gap-2">
           <div className="inline-flex bg-white border border-ink-200 rounded-xl p-0.5">
             {[
-              { id: 'list', label: 'Lista',  icon: List },
               { id: 'week', label: 'Semana', icon: Grid },
+              { id: 'list', label: 'Lista',  icon: List },
             ].map((v) => (
               <button
                 key={v.id}

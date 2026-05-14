@@ -81,7 +81,7 @@ export function DoctorScheduleWeek({ appointments, loading, onAppointmentClick }
         <div className="overflow-x-auto -mx-2">
           <div className="min-w-[760px] px-2">
             {/* Header */}
-            <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-ink-100 sticky top-0 bg-white">
+            <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b-2 border-ink-300 sticky top-0 bg-white">
               <div />
               {days.map((day) => {
                 const isToday = isSameDay(day, new Date())
@@ -123,14 +123,14 @@ export function DoctorScheduleWeek({ appointments, loading, onAppointmentClick }
                 return (
                   <div
                     key={key}
-                    className="relative border-l border-ink-100"
+                    className="relative border-l border-ink-300"
                     style={{ height: totalHeight }}
                   >
                     {/* Hour grid lines */}
                     {hours.map((h, i) => (
                       <div
                         key={h}
-                        className="absolute left-0 right-0 border-t border-ink-100/70"
+                        className="absolute left-0 right-0 border-t border-ink-300"
                         style={{ top: i * ROW_HEIGHT_PX }}
                       />
                     ))}
