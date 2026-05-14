@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './styles.css'
+import { registerPWA } from './lib/pwa'
+
+// Registra el Service Worker (solo en producción)
+registerPWA()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>

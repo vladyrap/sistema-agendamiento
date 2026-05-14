@@ -43,6 +43,8 @@ import ReceptionPatients from './pages/reception/ReceptionPatients'
 import MeetingRoom from './pages/teleconsulta/MeetingRoom'
 import PatientFullProfile from './pages/shared/PatientFullProfile'
 import ChatWidget from './components/ChatWidget'
+import InstallPrompt from './components/pwa/InstallPrompt'
+import UpdatePrompt from './components/pwa/UpdatePrompt'
 
 import TutorLayout from './pages/tutor/TutorLayout'
 import TutorDashboard from './pages/tutor/TutorDashboard'
@@ -167,6 +169,8 @@ export default function App() {
         </Route>
       </Routes>
       <ChatWidget />
+      <InstallPrompt />
+      <UpdatePrompt />
     </AuthProvider>
   )
 }
