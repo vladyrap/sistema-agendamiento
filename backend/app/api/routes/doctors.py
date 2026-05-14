@@ -143,12 +143,77 @@ def set_doctor_availability(
         raise HTTPException(status_code=404, detail="Médico no encontrado")
     if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Sin permisos")
+
+    # Validar que el rango sea coherente
+    if data.start_time >= data.end_time:
+        raise HTTPException(status_code=400, detail="La hora de inicio debe ser anterior a la de fin")
+
+    # Prevenir duplicados exactos
+    existing = (
+        db.query(DoctorAvailability)
+        .filter(
+            DoctorAvailability.doctor_id == doctor_id,
+            DoctorAvailability.day_of_week == data.day_of_week,
+            DoctorAvailability.start_time == data.start_time,
+            DoctorAvailability.end_time == data.end_time,
+            DoctorAvailability.is_active == True,
+        )
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Ya tienes un bloque idéntico para ese día y horario")
+
+    # Validar solapamiento con otros bloques del mismo día
+    overlap = (
+        db.query(DoctorAvailability)
+        .filter(
+            DoctorAvailability.doctor_id == doctor_id,
+            DoctorAvailability.day_of_week == data.day_of_week,
+            DoctorAvailability.is_active == True,
+            DoctorAvailability.start_time < data.end_time,
+            DoctorAvailability.end_time > data.start_time,
+        )
+        .first()
+    )
+    if overlap:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Se solapa con bloque existente {overlap.start_time.strftime('%H:%M')}-{overlap.end_time.strftime('%H:%M')}",
+        )
+
     avail = DoctorAvailability(doctor_id=doctor_id, **data.model_dump())
     db.add(avail)
     db.commit()
     db.refresh(avail)
     cache_delete_pattern(f"slots:doctor:{doctor_id}:*")
     return avail
+
+
+@router.delete("/{doctor_id}/availability/{avail_id}", status_code=204)
+def delete_doctor_availability(
+    doctor_id: int,
+    avail_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Sin permisos")
+    avail = (
+        db.query(DoctorAvailability)
+        .filter(
+            DoctorAvailability.id == avail_id,
+            DoctorAvailability.doctor_id == doctor_id,
+        )
+        .first()
+    )
+    if not avail:
+        raise HTTPException(status_code=404, detail="Bloque no encontrado")
+    db.delete(avail)
+    db.commit()
+    cache_delete_pattern(f"slots:doctor:{doctor_id}:*")
 
 
 @router.get("/{doctor_id}/available-slots", response_model=AvailableSlotsResponse)

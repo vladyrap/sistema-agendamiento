@@ -135,6 +135,7 @@ export const doctorsApi = {
   update:             (id, data) => api.put(`/doctors/${id}`, data),
   getAvailability:    (id)       => api.get(`/doctors/${id}/availability`),
   setAvailability:    (id, data) => api.post(`/doctors/${id}/availability`, data),
+  deleteAvailability: (doctorId, availId) => api.delete(`/doctors/${doctorId}/availability/${availId}`),
   getAvailableSlots:  (id, date) => api.get(`/doctors/${id}/available-slots`, { params: { date } }),
 }
 

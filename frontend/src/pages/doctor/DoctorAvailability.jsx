@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Plus, Clock, Plane, Trash2 } from 'lucide-react'
+import { Plus, Clock, Plane, Trash2, X } from 'lucide-react'
 import { doctorsApi, doctorBlocksApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card'
@@ -52,6 +52,23 @@ export default function DoctorAvailability() {
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!doctorId) return toast.error('Perfil de médico no encontrado')
+
+    // Validación local: hora inicio < hora fin
+    if (form.start_time >= form.end_time) {
+      toast.error('La hora de inicio debe ser anterior a la de fin')
+      return
+    }
+    // Validación local: no duplicado
+    const dup = availabilities.find(
+      (a) => a.day_of_week === form.day_of_week
+        && a.start_time.slice(0, 5) === form.start_time
+        && a.end_time.slice(0, 5) === form.end_time,
+    )
+    if (dup) {
+      toast.error('Ya tienes un bloque idéntico para ese día y horario')
+      return
+    }
+
     setSubmitting(true)
     try {
       const { data } = await doctorsApi.setAvailability(doctorId, {
@@ -65,6 +82,20 @@ export default function DoctorAvailability() {
       toast.error(err.response?.data?.detail || 'Error')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleRemoveAvailability = async (avail) => {
+    if (!doctorId) return
+    const dayLabel = DAYS.find((d) => d.id === avail.day_of_week)?.label || '?'
+    const range = `${avail.start_time.slice(0, 5)} – ${avail.end_time.slice(0, 5)}`
+    if (!window.confirm(`¿Eliminar el bloque ${dayLabel} ${range}?`)) return
+    try {
+      await doctorsApi.deleteAvailability(doctorId, avail.id)
+      setAvailabilities((prev) => prev.filter((a) => a.id !== avail.id))
+      toast.success('Bloque eliminado')
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al eliminar')
     }
   }
 
@@ -178,8 +209,20 @@ export default function DoctorAvailability() {
                     <span className="text-sm font-semibold text-ink-900">{d.label}</span>
                     <div className="flex flex-wrap gap-1.5">
                       {slots.map((s) => (
-                        <span key={s.id} className="px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 text-xs font-semibold tabular-nums border border-brand-100">
+                        <span
+                          key={s.id}
+                          className="group inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-brand-50 text-brand-700 text-xs font-semibold tabular-nums border border-brand-100"
+                        >
                           {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAvailability(s)}
+                            title="Eliminar bloque"
+                            aria-label="Eliminar bloque"
+                            className="ml-0.5 w-5 h-5 rounded-md flex items-center justify-center text-brand-500 hover:text-white hover:bg-rose-500 transition-colors"
+                          >
+                            <X className="w-3 h-3" strokeWidth={2.5} />
+                          </button>
                         </span>
                       ))}
                     </div>
