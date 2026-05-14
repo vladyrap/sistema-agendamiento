@@ -18,6 +18,7 @@ from .tutor import TutorRelationship
 from .questionnaire import QuestionnaireAssignment
 from .company import Company, CompanyMembership
 from .gift_card import GiftCard, UserCredit, CreditTransaction
+from .external_test import ExternalTestResult
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -28,4 +29,5 @@ __all__ = [
     "TutorRelationship", "QuestionnaireAssignment",
     "Company", "CompanyMembership",
     "GiftCard", "UserCredit", "CreditTransaction",
+    "ExternalTestResult",
 ]

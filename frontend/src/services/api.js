@@ -36,6 +36,15 @@ export const notificationsApi = {
   mine: () => api.get('/notifications/me'),
 }
 
+export const externalTestsApi = {
+  catalog:    ()                     => api.get('/external-tests/catalog'),
+  forPatient: (patientId)            => api.get(`/external-tests/patient/${patientId}`),
+  get:        (id)                   => api.get(`/external-tests/${id}`),
+  create:     (patientId, data)      => api.post(`/external-tests/patient/${patientId}`, data),
+  update:     (id, data)             => api.patch(`/external-tests/${id}`, data),
+  remove:     (id)                   => api.delete(`/external-tests/${id}`),
+}
+
 export const giftsApi = {
   // Público
   listPackages:  ()                       => api.get('/gifts/packages'),

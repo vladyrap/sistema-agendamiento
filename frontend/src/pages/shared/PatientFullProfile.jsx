@@ -23,6 +23,7 @@ import PatientMoodCard from '../../components/mood/PatientMoodCard'
 import PatientHomeworkSection from '../../components/homework/PatientHomeworkSection'
 import TutorsSection from '../../components/tutors/TutorsSection'
 import PatientQuestionnairesSection from '../../components/questionnaires/PatientQuestionnairesSection'
+import ExternalTestsSection from '../../components/external_tests/ExternalTestsSection'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -221,6 +222,12 @@ function TabGeneral({ data, isAdmin, onReload }) {
       <PatientQuestionnairesSection
         patientId={p.id}
         canAssign={canAssign}
+        className="lg:col-span-2"
+      />
+
+      <ExternalTestsSection
+        patientId={p.id}
+        canManage={canAssign}
         className="lg:col-span-2"
       />
 

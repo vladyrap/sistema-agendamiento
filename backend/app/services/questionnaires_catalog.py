@@ -136,6 +136,56 @@ WHO5 = {
 }
 
 
+# ─── AUDIT (versión completa) ─────────────────────────────────────────────
+# Organización Mundial de la Salud (Babor et al., 2001). 10 items. Dominio público.
+# https://www.who.int/publications/i/item/audit-the-alcohol-use-disorders-identification-test
+AUDIT10 = {
+    "code": "audit10",
+    "name": "AUDIT — Consumo de alcohol (versión completa OMS)",
+    "short_name": "AUDIT",
+    "description": "Detección detallada de consumo de alcohol problemático. 10 preguntas, ~3 minutos. Versión completa del AUDIT-C.",
+    "duration_minutes": 3,
+    "scoring_note": "Score 0-40. Cut-offs: 0-7 bajo riesgo · 8-15 riesgoso · 16-19 perjudicial · 20-40 probable dependencia.",
+    "frequency_recommendation": "Anual, o cuando AUDIT-C dé positivo (≥3 mujeres / ≥4 hombres).",
+    "instructions": (
+        "Las siguientes preguntas son sobre tu consumo de alcohol en los últimos 12 meses. "
+        "Una 'bebida estándar' equivale a una copa de vino (150ml), un vaso de cerveza (350ml) "
+        "o un trago corto (40ml de destilado)."
+    ),
+    # Nota: las preguntas 9 y 10 oficialmente usan escala de 3 valores (0, 2, 4), pero
+    # acá usamos la misma escala de 5 valores para coherencia técnica. El score total mantiene
+    # validez clínica para screening.
+    "scale_options": [
+        {"value": 0, "label": "Nunca / No"},
+        {"value": 1, "label": "Mensual o menos / Poco frecuente"},
+        {"value": 2, "label": "2-4 veces al mes / Mensualmente"},
+        {"value": 3, "label": "2-3 veces por semana / Semanalmente"},
+        {"value": 4, "label": "4 ó más veces por semana / A diario / Sí, en el último año"},
+    ],
+    "questions": [
+        "¿Con qué frecuencia consumes alguna bebida alcohólica?",
+        "¿Cuántas bebidas alcohólicas tomas en un día típico de consumo? (1-2, 3-4, 5-6, 7-9, 10+)",
+        "¿Con qué frecuencia tomas 6 o más bebidas en una sola ocasión?",
+        "¿Con qué frecuencia, en el último año, no pudiste parar de beber una vez que habías empezado?",
+        "¿Con qué frecuencia, en el último año, dejaste de hacer algo importante por estar bebiendo?",
+        "¿Con qué frecuencia, en el último año, necesitaste beber en la mañana para 'arreglarte' tras haber bebido el día anterior?",
+        "¿Con qué frecuencia, en el último año, te sentiste culpable o tuviste remordimientos por haber bebido?",
+        "¿Con qué frecuencia, en el último año, no pudiste recordar lo que pasó la noche anterior por estar bebiendo?",
+        "¿Tú u otra persona se ha lesionado por tu consumo de alcohol? (No / Sí, no en el último año / Sí, en el último año)",
+        "¿Algún familiar, amigo o profesional de la salud te ha expresado preocupación por tu consumo o te ha sugerido dejarlo? (No / Sí, no en el último año / Sí, en el último año)",
+    ],
+    "severity_thresholds": [
+        (0,  7,  "low_risk",        "Bajo riesgo",                "wellness", "Tu consumo aparece dentro de niveles seguros."),
+        (8,  15, "risky",           "Consumo riesgoso",           "amber",    "Conviene reducir el consumo. Una intervención breve puede ayudar."),
+        (16, 19, "harmful",         "Consumo perjudicial",        "rose",     "Tu consumo está afectando tu salud. Atención profesional especializada es prioritaria."),
+        (20, 40, "probable_dep",    "Probable dependencia",       "rose",     "Tratamiento especializado y posiblemente desintoxicación supervisada."),
+    ],
+    "critical_question_index": None,
+    "critical_threshold": None,
+    "critical_message": None,
+}
+
+
 # ─── AUDIT-C ──────────────────────────────────────────────────────────────
 # OMS — Versión corta del AUDIT, 3 items. Screening rápido de consumo de riesgo.
 AUDITC = {
@@ -276,12 +326,13 @@ PCL5 = {
 
 
 CATALOG = {
-    "phq9":   PHQ9,
-    "gad7":   GAD7,
-    "who5":   WHO5,
-    "auditc": AUDITC,
-    "epds":   EPDS,
-    "pcl5":   PCL5,
+    "phq9":    PHQ9,
+    "gad7":    GAD7,
+    "who5":    WHO5,
+    "auditc":  AUDITC,
+    "audit10": AUDIT10,
+    "epds":    EPDS,
+    "pcl5":    PCL5,
 }
 
 
