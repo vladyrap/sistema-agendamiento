@@ -17,6 +17,8 @@ class AppointmentCreate(BaseModel):
     # Repetir la cita semanalmente N veces más después de la primera.
     # repeat_weeks=0 → solo la cita base. repeat_weeks=4 → 5 citas en total.
     repeat_weeks: int = 0
+    # Usar crédito de gift cards al reservar.
+    use_credit: bool = True
 
 
 class CancelDayRequest(BaseModel):

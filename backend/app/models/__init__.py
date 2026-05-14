@@ -17,6 +17,7 @@ from .homework import HomeworkAssignment, HomeworkStatus
 from .tutor import TutorRelationship
 from .questionnaire import QuestionnaireAssignment
 from .company import Company, CompanyMembership
+from .gift_card import GiftCard, UserCredit, CreditTransaction
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -26,4 +27,5 @@ __all__ = [
     "HomeworkAssignment", "HomeworkStatus",
     "TutorRelationship", "QuestionnaireAssignment",
     "Company", "CompanyMembership",
+    "GiftCard", "UserCredit", "CreditTransaction",
 ]

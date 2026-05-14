@@ -32,6 +32,19 @@ export const chatApi = {
   send:    (message, history) => api.post('/chat/message', { message, history }),
 }
 
+export const giftsApi = {
+  // Público
+  listPackages:  ()                       => api.get('/gifts/packages'),
+  buy:           (data)                   => api.post('/gifts/buy', data),
+  // Usuario logueado
+  redeem:        (code)                   => api.post('/gifts/redeem', { code }),
+  myCredit:      ()                       => api.get('/gifts/me/credit'),
+  myTransactions:()                       => api.get('/gifts/me/transactions'),
+  mySentGifts:   ()                       => api.get('/gifts/me/sent'),
+  // Admin
+  listAll:       (status)                 => api.get('/gifts/', { params: status ? { status } : {} }),
+}
+
 export const tutorsApi = {
   // Gestión de tutores
   add:           (patientId, data)         => api.post(`/tutors/patient/${patientId}`, data),

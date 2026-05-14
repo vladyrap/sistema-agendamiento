@@ -55,14 +55,33 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
         logger.warning("payments.webhook_payment_not_found", extra={"id": data_id})
         return {"ok": True, "skipped": True}
 
-    external_ref = detail.get("external_reference")  # = appointment_id
+    external_ref = detail.get("external_reference") or ""
     mp_status = detail.get("status")
     new_status = MP_STATUS_MAP.get(mp_status, PaymentStatus.pending)
 
     if not external_ref:
         return {"ok": True, "skipped": True}
 
-    appointment = db.query(Appointment).filter(Appointment.id == int(external_ref)).first()
+    # Si es una gift card (external_reference = "gift:<id>"), activarla
+    if external_ref.startswith("gift:"):
+        if mp_status == "approved":
+            try:
+                from app.api.routes.gifts import activate_gift_card_by_external_reference
+                activate_gift_card_by_external_reference(
+                    db, external_ref, mp_payment_id=str(detail.get("id")),
+                )
+                logger.info("gift.activated_via_webhook", extra={"ref": external_ref})
+            except Exception:
+                logger.exception("gift.activation_failed")
+        return {"ok": True, "type": "gift", "status": mp_status}
+
+    # Si no es gift card → flujo de cita normal
+    try:
+        appointment_id = int(external_ref)
+    except (TypeError, ValueError):
+        return {"ok": True, "skipped": True}
+
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         return {"ok": True, "skipped": True}
 

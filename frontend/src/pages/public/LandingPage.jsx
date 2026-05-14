@@ -128,6 +128,9 @@ export default function LandingPage() {
             <a href="#especialidades" className="hover:text-white transition-colors">Especialidades</a>
             <a href="#como-funciona"  className="hover:text-white transition-colors">Cómo funciona</a>
             <a href="#testimonios"    className="hover:text-white transition-colors">Testimonios</a>
+            <Link to="/regalar" className="hover:text-white transition-colors inline-flex items-center gap-1">
+              🎁 Regalar
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/login">

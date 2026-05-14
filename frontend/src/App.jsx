@@ -51,6 +51,9 @@ import CompanyLayout from './pages/company/CompanyLayout'
 import CompanyDashboard from './pages/company/CompanyDashboard'
 import AdminCompanies from './pages/admin/AdminCompanies'
 
+import GiftPage from './pages/public/GiftPage'
+import AdminGifts from './pages/admin/AdminGifts'
+
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-9 h-9 rounded-full border-[3px] border-ink-200 border-t-brand-600 animate-spin" /></div>
@@ -78,6 +81,7 @@ export default function App() {
         <Route path="/" element={<RootEntry />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/regalar" element={<GiftPage />} />
 
         <Route path="/teleconsulta/:id" element={
           <ProtectedRoute>
@@ -129,6 +133,7 @@ export default function App() {
           <Route path="appointments" element={<AdminAppointments />} />
           <Route path="specialties" element={<AdminSpecialties />} />
           <Route path="companies" element={<AdminCompanies />} />
+          <Route path="gifts" element={<AdminGifts />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
 

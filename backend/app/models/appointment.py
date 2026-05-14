@@ -31,6 +31,8 @@ class Appointment(Base):
     cancellation_reason = Column(String(300))
     # Si la cita fue cubierta por el pool de una empresa (convenio B2B):
     paid_by_company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    # Crédito de gift cards usado para esta cita (en CLP):
+    paid_by_credit_clp = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

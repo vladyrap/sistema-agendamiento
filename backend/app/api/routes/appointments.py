@@ -297,6 +297,20 @@ def create_appointment(
     if covered_by_company is not None:
         payment_status = "covered_by_company"
 
+    # Aplicar crédito de gift cards (si el paciente lo tiene y lo eligió)
+    if price > 0 and covered_by_company is None and getattr(data, "use_credit", True):
+        try:
+            from app.api.routes.gifts import use_credit_for_appointment
+            used = use_credit_for_appointment(db, target_patient_id, appt.id, price)
+            if used > 0:
+                appt.paid_by_credit_clp = used
+                price -= used
+                db.commit()
+                if price == 0:
+                    payment_status = "covered_by_credit"
+        except Exception:
+            logger.exception("appointment.credit_apply_failed")
+
     if price > 0 and payments_service.is_enabled() and covered_by_company is None:
         title = f"Consulta con Dr(a). {doctor.user.first_name} {doctor.user.last_name}"
         result = payments_service.create_preference(

@@ -19,6 +19,7 @@ import MoodCheckin from '../../components/mood/MoodCheckin'
 import PatientHomeworkWidget from '../../components/homework/PatientHomeworkWidget'
 import PatientQuestionnairesWidget from '../../components/questionnaires/PatientQuestionnairesWidget'
 import CompanyBenefitCard from '../../components/companies/CompanyBenefitCard'
+import CreditCard from '../../components/gift/CreditCard'
 
 export default function PatientDashboard() {
   const { user } = useAuth()
@@ -104,6 +105,11 @@ export default function PatientDashboard() {
       {/* Beneficio corporativo (si tiene) */}
       <motion.div {...fadeInUp}>
         <CompanyBenefitCard />
+      </motion.div>
+
+      {/* Crédito de gift cards */}
+      <motion.div {...fadeInUp}>
+        <CreditCard />
       </motion.div>
 
       {/* Diario emocional — check-in del día */}
