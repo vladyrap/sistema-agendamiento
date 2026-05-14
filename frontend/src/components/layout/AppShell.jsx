@@ -1,11 +1,12 @@
 import React from 'react'
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut, Bell } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Logo, LogoMark } from '../ui/Logo'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
 import { cn } from '../../lib/cn'
+import NotificationsBell from '../NotificationsBell'
 
 const roleLabels = { admin: 'Administrador', doctor: 'Profesional', patient: 'Paciente', receptionist: 'Recepcionista' }
 
@@ -60,15 +61,9 @@ export function AppShell({ links, basePath, brandTag }) {
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-ink-100">
-          <div className="flex items-center gap-2.5 px-2 py-2">
-            <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="sm" />
-            <div className="flex-1 min-w-0 leading-tight">
-              <div className="text-sm font-semibold text-ink-900 truncate">
-                {user?.first_name} {user?.last_name}
-              </div>
-              <div className="text-[11px] text-ink-500 truncate">{roleLabels[user?.role]}</div>
-            </div>
+        <div className="px-3 py-3 border-t border-ink-100">
+          <div className="flex items-center justify-between mb-2 px-2">
+            <NotificationsBell />
             <button
               onClick={handleLogout}
               title="Cerrar sesión"
@@ -76,6 +71,15 @@ export function AppShell({ links, basePath, brandTag }) {
             >
               <LogOut className="w-4 h-4" />
             </button>
+          </div>
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-ink-50/60">
+            <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="sm" />
+            <div className="flex-1 min-w-0 leading-tight">
+              <div className="text-sm font-semibold text-ink-900 truncate">
+                {user?.first_name} {user?.last_name}
+              </div>
+              <div className="text-[11px] text-ink-500 truncate">{roleLabels[user?.role]}</div>
+            </div>
           </div>
         </div>
       </aside>
@@ -86,9 +90,12 @@ export function AppShell({ links, basePath, brandTag }) {
         <header className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-ink-100">
           <div className="px-4 h-14 flex items-center justify-between">
             <Link to={basePath}><Logo /></Link>
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Cerrar sesión">
-              <LogOut className="w-4 h-4 text-ink-600" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <NotificationsBell />
+              <Button variant="ghost" size="icon" onClick={handleLogout} title="Cerrar sesión">
+                <LogOut className="w-4 h-4 text-ink-600" />
+              </Button>
+            </div>
           </div>
           <nav className="flex items-center gap-1 px-3 pb-2 overflow-x-auto">
             {links.map(({ to, icon: Icon, label, end }) => (

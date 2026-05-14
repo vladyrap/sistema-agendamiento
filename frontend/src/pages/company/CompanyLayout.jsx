@@ -1,6 +1,7 @@
 import React from 'react'
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
 import { Home, Users, LogOut, Building2 } from 'lucide-react'
+import NotificationsBell from '../../components/NotificationsBell'
 import { useAuth } from '../../context/AuthContext'
 import { Logo } from '../../components/ui/Logo'
 import { Avatar } from '../../components/ui/Avatar'
@@ -51,6 +52,7 @@ export default function CompanyLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationsBell />
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100 px-2.5 py-1 rounded-full">
               <Building2 className="w-3 h-3" /> Empresa
             </span>

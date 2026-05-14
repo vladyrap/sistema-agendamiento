@@ -1,6 +1,7 @@
 import React from 'react'
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
-import { Home, Search, Calendar, User, LogOut, Bell, Heart, ClipboardList, Sparkles } from 'lucide-react'
+import { Home, Search, Calendar, User, LogOut, Heart, ClipboardList, Sparkles } from 'lucide-react'
+import NotificationsBell from '../../components/NotificationsBell'
 import { useAuth } from '../../context/AuthContext'
 import { Logo } from '../../components/ui/Logo'
 import { Avatar } from '../../components/ui/Avatar'
@@ -57,10 +58,7 @@ export default function PatientLayout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5 text-ink-600" strokeWidth={2} />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" />
-            </Button>
+            <NotificationsBell />
             <Link to="/patient/profile" className="hidden sm:flex items-center gap-3 pl-3 ml-1 border-l border-ink-200 hover:opacity-80">
               <div className="text-right">
                 <div className="text-sm font-semibold text-ink-900 leading-tight">

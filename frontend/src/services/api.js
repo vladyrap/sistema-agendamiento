@@ -32,6 +32,10 @@ export const chatApi = {
   send:    (message, history) => api.post('/chat/message', { message, history }),
 }
 
+export const notificationsApi = {
+  mine: () => api.get('/notifications/me'),
+}
+
 export const giftsApi = {
   // Público
   listPackages:  ()                       => api.get('/gifts/packages'),
