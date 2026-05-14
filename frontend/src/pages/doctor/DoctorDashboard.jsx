@@ -5,7 +5,9 @@ import { es } from 'date-fns/locale'
 import {
   CalendarDays, Clock, CheckCircle2, Users, Sparkles, Stethoscope, Brain,
 } from 'lucide-react'
-import { appointmentsApi } from '../../services/api'
+import { Link } from 'react-router-dom'
+import { Receipt, ArrowRight } from 'lucide-react'
+import { appointmentsApi, boletasApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { Card } from '../../components/ui/Card'
 import { Avatar } from '../../components/ui/Avatar'
@@ -21,6 +23,7 @@ export default function DoctorDashboard() {
   const [today, setToday] = useState([])
   const [pending, setPending] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [boletasPending, setBoletasPending] = useState({ count: 0, amount: 0 })
 
   useEffect(() => {
     appointmentsApi.list()
@@ -31,6 +34,9 @@ export default function DoctorDashboard() {
         setPending(r.data.filter((a) => a.status === 'scheduled').length)
       })
       .finally(() => setLoading(false))
+    boletasApi.pendingSummary()
+      .then((r) => setBoletasPending({ count: r.data.pending_count || 0, amount: r.data.pending_amount_clp || 0 }))
+      .catch(() => {})
   }, [])
 
   const greeting = (() => {
@@ -111,6 +117,30 @@ export default function DoctorDashboard() {
           </motion.div>
         ))}
       </motion.div>
+
+      {boletasPending.count > 0 && (
+        <motion.div {...fadeInUp}>
+          <Link
+            to="/doctor/boletas"
+            className="group block rounded-2xl border border-amber-200 bg-amber-50/60 p-5 hover:bg-amber-50 hover:border-amber-300 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-700 shrink-0">
+                <Receipt className="w-5 h-5" strokeWidth={2} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-ink-900">
+                  Tienes {boletasPending.count} {boletasPending.count === 1 ? 'boleta pendiente' : 'boletas pendientes'} de emitir en el SII
+                </div>
+                <div className="text-xs text-ink-600 mt-0.5">
+                  Total: ${(boletasPending.amount || 0).toLocaleString('es-CL')} CLP
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-amber-700 group-hover:translate-x-0.5 transition-transform shrink-0" />
+            </div>
+          </Link>
+        </motion.div>
+      )}
 
       {/* Feed de "amanecidas" — diarios emocionales recientes de tus pacientes */}
       <motion.div {...fadeInUp}>

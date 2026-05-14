@@ -133,6 +133,30 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
         except Exception:
             logger.exception("payments.notify_failed")
 
+        # Crear boleta de honorarios pendiente para el psicólogo/a.
+        # Solo si el monto cobrado es > 0 (las cubiertas por empresa o gift card no generan boleta).
+        try:
+            from app.models.boleta import BoletaHonorarios, BoletaStatus
+            already = (
+                db.query(BoletaHonorarios)
+                .filter(BoletaHonorarios.appointment_id == appointment.id)
+                .first()
+            )
+            if not already and payment.amount and payment.amount > 0:
+                b = BoletaHonorarios(
+                    doctor_id=appointment.doctor_id,
+                    patient_id=appointment.patient_id,
+                    appointment_id=appointment.id,
+                    amount_clp=payment.amount,
+                    glosa="Atención psicológica",
+                    service_date=appointment.appointment_date,
+                    status=BoletaStatus.pending,
+                )
+                db.add(b)
+                db.commit()
+        except Exception:
+            logger.exception("payments.boleta_create_failed")
+
     logger.info("payments.webhook_processed",
                 extra={"appointment_id": appointment.id, "status": new_status.value})
     return {"ok": True, "status": new_status.value}

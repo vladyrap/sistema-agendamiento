@@ -19,6 +19,7 @@ from .questionnaire import QuestionnaireAssignment
 from .company import Company, CompanyMembership
 from .gift_card import GiftCard, UserCredit, CreditTransaction
 from .external_test import ExternalTestResult
+from .boleta import BoletaHonorarios, BoletaStatus
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -30,4 +31,5 @@ __all__ = [
     "Company", "CompanyMembership",
     "GiftCard", "UserCredit", "CreditTransaction",
     "ExternalTestResult",
+    "BoletaHonorarios", "BoletaStatus",
 ]

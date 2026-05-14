@@ -45,6 +45,17 @@ export const externalTestsApi = {
   remove:     (id)                   => api.delete(`/external-tests/${id}`),
 }
 
+export const boletasApi = {
+  list:           (params)           => api.get('/boletas', { params }),
+  pendingSummary: ()                 => api.get('/boletas/pending-summary'),
+  get:            (id)               => api.get(`/boletas/${id}`),
+  create:         (data)             => api.post('/boletas', data),
+  update:         (id, data)         => api.patch(`/boletas/${id}`, data),
+  issue:          (id, data)         => api.patch(`/boletas/${id}/issue`, data),
+  cancel:         (id)               => api.patch(`/boletas/${id}/cancel`),
+  remove:         (id)               => api.delete(`/boletas/${id}`),
+}
+
 export const giftsApi = {
   // Público
   listPackages:  ()                       => api.get('/gifts/packages'),

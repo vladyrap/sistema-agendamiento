@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, CalendarDays, Clock, User, Users, Shield } from 'lucide-react'
+import { Home, CalendarDays, Clock, User, Users, Shield, Receipt } from 'lucide-react'
 import { AppShell } from '../../components/layout/AppShell'
 
 const links = [
@@ -7,6 +7,7 @@ const links = [
   { to: '/doctor/schedule',     icon: CalendarDays, label: 'Agenda' },
   { to: '/doctor/patients',     icon: Users,        label: 'Pacientes' },
   { to: '/doctor/tutors',       icon: Shield,       label: 'Tutores' },
+  { to: '/doctor/boletas',      icon: Receipt,      label: 'Boletas' },
   { to: '/doctor/availability', icon: Clock,        label: 'Disponibilidad' },
   { to: '/doctor/profile',      icon: User,         label: 'Mi perfil' },
 ]
