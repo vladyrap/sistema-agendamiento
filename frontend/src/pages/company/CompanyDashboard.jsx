@@ -13,6 +13,7 @@ import { Avatar } from '../../components/ui/Avatar'
 import { Spinner } from '../../components/ui/Spinner'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { fadeInUp } from '../../lib/motion'
+import ExportButton from '../../components/ui/ExportButton'
 
 export default function CompanyDashboard() {
   const { user } = useAuth()
@@ -101,13 +102,16 @@ export default function CompanyDashboard() {
               {anonymized && <span className="ml-1 italic">(anonimizado)</span>}
             </p>
           </div>
-          <button
-            onClick={() => setAnonymized((a) => !a)}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-600 hover:text-ink-900"
-          >
-            {anonymized ? <ToggleLeft className="w-5 h-5" /> : <ToggleRight className="w-5 h-5 text-brand-600" />}
-            {anonymized ? 'Anonimizado' : 'Ver nombres'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setAnonymized((a) => !a)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-600 hover:text-ink-900"
+            >
+              {anonymized ? <ToggleLeft className="w-5 h-5" /> : <ToggleRight className="w-5 h-5 text-brand-600" />}
+              {anonymized ? 'Anonimizado' : 'Ver nombres'}
+            </button>
+            <ExportButton endpoint={`/exports/company/${stats.company_id}/usage`} filename={`uso_${stats.name}.xlsx`} label="Excel" />
+          </div>
         </div>
 
         {usage.length === 0 ? (

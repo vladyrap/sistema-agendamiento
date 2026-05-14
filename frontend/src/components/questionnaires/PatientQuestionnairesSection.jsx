@@ -14,6 +14,7 @@ import { cn } from '../../lib/cn'
 import AssignQuestionnaireForm from './AssignQuestionnaireForm'
 import SeverityBar from './SeverityBar'
 import HistoryChart from './HistoryChart'
+import ExportButton from '../../components/ui/ExportButton'
 
 /**
  * Sección en la ficha del paciente con sus cuestionarios + histórico por test.
@@ -94,9 +95,12 @@ export default function PatientQuestionnairesSection({ patientId, canAssign = tr
             Tests validados (PHQ-9, GAD-7, WHO-5) para evaluar y seguir la evolución clínica.
           </p>
         </div>
-        {canAssign && (
-          <AssignQuestionnaireForm patientId={patientId} onCreated={load} />
-        )}
+        <div className="flex items-center gap-2">
+          <ExportButton endpoint={`/exports/questionnaires/patient/${patientId}`} filename="cuestionarios.xlsx" label="Excel" size="sm" />
+          {canAssign && (
+            <AssignQuestionnaireForm patientId={patientId} onCreated={load} />
+          )}
+        </div>
       </div>
 
       {loading ? (

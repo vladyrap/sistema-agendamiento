@@ -16,6 +16,7 @@ import { Badge, StatusBadge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
 import { ReviewForm } from '../../components/patient/ReviewForm'
+import ExportButton from '../../components/ui/ExportButton'
 import { cn } from '../../lib/cn'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
 
@@ -97,9 +98,12 @@ export default function MyAppointments() {
 
   return (
     <motion.div {...fadeInUp} className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mis citas</h1>
-        <p className="text-sm text-ink-500 mt-1">Próximas, pasadas y todo tu historial.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Mis citas</h1>
+          <p className="text-sm text-ink-500 mt-1">Próximas, pasadas y todo tu historial.</p>
+        </div>
+        <ExportButton endpoint="/exports/appointments" filename="mis_citas.xlsx" />
       </div>
 
       {/* Tabs */}

@@ -7,6 +7,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { EmptyState } from '../../components/ui/EmptyState'
 import HomeworkItem from './HomeworkItem'
 import AssignHomeworkForm from './AssignHomeworkForm'
+import ExportButton from '../../components/ui/ExportButton'
 
 /**
  * Sección de tareas en la ficha del paciente (vista del doctor).
@@ -45,9 +46,12 @@ export default function PatientHomeworkSection({ patientId, canAssign = true }) 
           </span>
         </h3>
 
-        {canAssign && (
-          <AssignHomeworkForm patientId={patientId} onCreated={load} />
-        )}
+        <div className="flex items-center gap-2">
+          <ExportButton endpoint={`/exports/homework/patient/${patientId}`} filename="tareas.xlsx" label="Excel" size="sm" />
+          {canAssign && (
+            <AssignHomeworkForm patientId={patientId} onCreated={load} />
+          )}
+        </div>
       </div>
 
       {/* Filtros */}

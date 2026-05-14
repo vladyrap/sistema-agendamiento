@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
+import ExportButton from '../../components/ui/ExportButton'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -61,9 +62,16 @@ export default function AdminUsers() {
 
   return (
     <motion.div {...fadeInUp} className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Usuarios</h1>
-        <p className="text-sm text-ink-500 mt-1">{users.length} cuentas registradas en la plataforma.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Usuarios</h1>
+          <p className="text-sm text-ink-500 mt-1">{users.length} cuentas registradas en la plataforma.</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <ExportButton endpoint="/exports/patients" filename="pacientes.xlsx" label="Pacientes" />
+          <ExportButton endpoint="/exports/doctors" filename="profesionales.xlsx" label="Profesionales" />
+          <ExportButton endpoint="/exports/tutors" filename="tutores.xlsx" label="Tutores" />
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

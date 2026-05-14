@@ -16,6 +16,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { fadeInUp } from '../../lib/motion'
 import { cn } from '../../lib/cn'
+import ExportButton from '../../components/ui/ExportButton'
 
 export default function AdminCompanies() {
   const [companies, setCompanies] = useState([])
@@ -60,9 +61,12 @@ export default function AdminCompanies() {
             Gestioná convenios corporativos: empresas, pool de sesiones, empleados.
           </p>
         </div>
-        <Button onClick={() => setEditing({})}>
-          <Plus className="w-4 h-4" /> Nueva empresa
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <ExportButton endpoint="/exports/companies" filename="empresas.xlsx" />
+          <Button onClick={() => setEditing({})}>
+            <Plus className="w-4 h-4" /> Nueva empresa
+          </Button>
+        </div>
       </motion.div>
 
       {/* Form de alta/edición */}
@@ -410,9 +414,12 @@ function CompanyDetail({ company, onBack }) {
               </div>
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-            <Pencil className="w-3.5 h-3.5" /> Editar
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportButton endpoint={`/exports/company/${data.id}/usage`} filename={`uso_${data.name}.xlsx`} label="Uso (Excel)" />
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+              <Pencil className="w-3.5 h-3.5" /> Editar
+            </Button>
+          </div>
         </div>
       </Card>
 

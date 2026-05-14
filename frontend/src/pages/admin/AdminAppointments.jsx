@@ -10,6 +10,7 @@ import { StatusBadge } from '../../components/ui/Badge'
 import { Input } from '../../components/ui/Input'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Spinner } from '../../components/ui/Spinner'
+import ExportButton from '../../components/ui/ExportButton'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -41,9 +42,12 @@ export default function AdminAppointments() {
 
   return (
     <motion.div {...fadeInUp} className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Citas del sistema</h1>
-        <p className="text-sm text-ink-500 mt-1">Mostrando las últimas 200 citas registradas.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Citas del sistema</h1>
+          <p className="text-sm text-ink-500 mt-1">Mostrando las últimas 200 citas registradas.</p>
+        </div>
+        <ExportButton endpoint="/exports/appointments" filename="citas.xlsx" />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

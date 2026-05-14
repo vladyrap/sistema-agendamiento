@@ -5,6 +5,7 @@ import { Heart, Flame, Activity, TrendingUp } from 'lucide-react'
 import { moodApi } from '../../services/api'
 import { Card } from '../../components/ui/Card'
 import { Spinner } from '../../components/ui/Spinner'
+import ExportButton from '../../components/ui/ExportButton'
 import MoodChart from './MoodChart'
 
 const EMOJI = {
@@ -50,11 +51,21 @@ export default function PatientMoodCard({ patientId, days = 30, className = '' }
         <h3 className="text-sm font-semibold inline-flex items-center gap-2">
           <Heart className="w-4 h-4 text-rose-500" /> Diario emocional
         </h3>
-        {summary && summary.days_logged > 0 && (
-          <span className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold">
-            Últimos {days} días
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {summary && summary.days_logged > 0 && (
+            <span className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold">
+              Últimos {days} días
+            </span>
+          )}
+          {summary && summary.days_logged > 0 && (
+            <ExportButton
+              endpoint={`/exports/mood/patient/${patientId}`}
+              filename={`diario_emocional.xlsx`}
+              label="Excel"
+              size="sm"
+            />
+          )}
+        </div>
       </div>
 
       {loading ? (
