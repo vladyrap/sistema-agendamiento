@@ -51,6 +51,20 @@ export const myPatientsApi = {
   forDoctor:     ()                        => api.get('/patients/doctor/me'),
 }
 
+export const questionnairesApi = {
+  list:          ()                                    => api.get('/questionnaires/'),
+  get:           (code)                                => api.get(`/questionnaires/${code}`),
+  // Asignaciones
+  assign:        (data)                                => api.post('/questionnaires/assignments', data),
+  remove:        (id)                                  => api.delete(`/questionnaires/assignments/${id}`),
+  getAssignment: (id)                                  => api.get(`/questionnaires/assignments/${id}`),
+  submit:        (id, answers, comment = '')           => api.post(`/questionnaires/assignments/${id}/submit`, { answers, patient_comment: comment }),
+  mine:          (status)                              => api.get('/questionnaires/assignments/me', { params: { status } }),
+  forPatient:    (patientId, status, code)             => api.get(`/questionnaires/assignments/patient/${patientId}`, { params: { status, code } }),
+  history:       (patientId, code)                     => api.get(`/questionnaires/assignments/patient/${patientId}/history/${code}`),
+  doctorRecent:  (days = 30)                           => api.get('/questionnaires/assignments/doctor/recent', { params: { days } }),
+}
+
 export const homeworkApi = {
   // doctor
   create:        (data)                  => api.post('/homework/', data),

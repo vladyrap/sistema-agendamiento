@@ -22,6 +22,7 @@ import { SessionLogForm } from '../../components/medical/SessionLogForm'
 import PatientMoodCard from '../../components/mood/PatientMoodCard'
 import PatientHomeworkSection from '../../components/homework/PatientHomeworkSection'
 import TutorsSection from '../../components/tutors/TutorsSection'
+import PatientQuestionnairesSection from '../../components/questionnaires/PatientQuestionnairesSection'
 import { cn } from '../../lib/cn'
 import { fadeInUp } from '../../lib/motion'
 
@@ -214,6 +215,12 @@ function TabGeneral({ data, isAdmin, onReload }) {
         patientBirthDate={p.birth_date}
         canManage={canManageTutors}
         canAlert={canAlertTutors}
+        className="lg:col-span-2"
+      />
+
+      <PatientQuestionnairesSection
+        patientId={p.id}
+        canAssign={canAssign}
         className="lg:col-span-2"
       />
 
