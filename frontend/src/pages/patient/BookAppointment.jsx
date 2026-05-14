@@ -112,7 +112,7 @@ export default function BookAppointment() {
         <div className="space-y-5">
           {/* Doctor mini-card */}
           <Card className="p-5 flex items-center gap-4">
-            <Avatar name={fullName} size="lg" />
+            <Avatar name={fullName} src={doctor?.user?.photo_url} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-ink-900">Dr(a). {fullName}</div>
               <div className="flex items-center gap-1.5 text-sm text-brand-600 mt-0.5">

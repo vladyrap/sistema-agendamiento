@@ -43,6 +43,7 @@ class UserResponse(UserBase):
     health_insurance: Optional[str] = None
     patient_status: Optional[str] = None
     assigned_doctor_id: Optional[int] = None
+    photo_url: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -24,7 +24,7 @@ export function DoctorCard({ doctor }) {
         className="group block rounded-2xl bg-white border border-ink-200/70 p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-soft-lg hover:border-brand-200"
       >
         <div className="flex items-start gap-4">
-          <Avatar name={fullName} size="lg" />
+          <Avatar name={fullName} src={doctor.user.photo_url} size="lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-[15px] font-semibold text-ink-900 tracking-tight truncate">

@@ -37,6 +37,7 @@ class User(Base):
     health_insurance = Column(String(100))  # Fonasa A/B/C/D, Isapre Banmédica, etc.
     patient_status = Column(String(30), default="active")  # ver PATIENT_STATUSES
     assigned_doctor_id = Column(Integer, ForeignKey("doctors.id"))
+    photo_url = Column(String(500))  # URL pública de la foto de perfil (CDN, pravatar, etc.)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

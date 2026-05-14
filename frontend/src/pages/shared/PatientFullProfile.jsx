@@ -87,7 +87,7 @@ export default function PatientFullProfile() {
         </div>
         <div className="px-6 sm:px-8 pb-6 -mt-12 relative">
           <div className="flex items-end gap-4 flex-wrap">
-            <Avatar name={fullName} size="2xl" className="ring-4 ring-white shadow-soft-lg" />
+            <Avatar name={fullName} src={p.photo_url} size="2xl" className="ring-4 ring-white shadow-soft-lg" />
             <div className="flex-1 min-w-[200px]">
               <div className="flex items-center gap-2 flex-wrap mt-2">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{fullName}</h1>

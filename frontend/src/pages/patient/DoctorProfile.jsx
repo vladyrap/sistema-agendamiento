@@ -76,7 +76,7 @@ export default function DoctorProfile() {
             </div>
             <div className="px-6 sm:px-8 pb-6 -mt-12 relative">
               <div className="flex items-end justify-between gap-4 flex-wrap">
-                <Avatar name={fullName} size="2xl" className="ring-4 ring-white shadow-soft-lg" />
+                <Avatar name={fullName} src={doctor?.user?.photo_url} size="2xl" className="ring-4 ring-white shadow-soft-lg" />
               </div>
               <div className="mt-5">
                 <div className="flex items-center gap-2 flex-wrap">

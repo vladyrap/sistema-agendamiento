@@ -66,7 +66,7 @@ export default function PatientLayout() {
                 </div>
                 <div className="text-[11px] text-ink-500 leading-tight">Paciente</div>
               </div>
-              <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="sm" />
+              <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} src={user?.photo_url} size="sm" />
             </Link>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Cerrar sesión">
               <LogOut className="w-4 h-4 text-ink-600" />

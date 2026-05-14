@@ -73,7 +73,7 @@ export function AppShell({ links, basePath, brandTag }) {
             </button>
           </div>
           <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-ink-50/60">
-            <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="sm" />
+            <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} src={user?.photo_url} size="sm" />
             <div className="flex-1 min-w-0 leading-tight">
               <div className="text-sm font-semibold text-ink-900 truncate">
                 {user?.first_name} {user?.last_name}
