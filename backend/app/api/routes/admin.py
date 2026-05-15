@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
@@ -7,6 +8,7 @@ from app.core.security import get_password_hash
 from app.models.user import User, UserRole
 from app.models.doctor import Doctor
 from app.models.appointment import Appointment, AppointmentStatus
+from app.models.access_audit_log import AccessAuditLog
 from app.schemas.user import UserResponse, UserUpdate
 from app.schemas.doctor import AdminDoctorCreate, DoctorResponse
 from app.schemas.staff import ReceptionistCreate
@@ -178,4 +180,45 @@ def list_all_appointments(
             "status": a.status,
         }
         for a in appointments
+    ]
+
+
+@router.get("/audit-log", response_model=List[dict])
+def list_audit_log(
+    user_id: Optional[int] = Query(None),
+    patient_id: Optional[int] = Query(None),
+    resource_type: Optional[str] = Query(None),
+    action: Optional[str] = Query(None),
+    days: int = Query(30, ge=1, le=365),
+    limit: int = Query(200, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """Auditoría de accesos a recursos clínicos sensibles. Solo admin."""
+    since = datetime.utcnow() - timedelta(days=days)
+    q = db.query(AccessAuditLog).filter(AccessAuditLog.created_at >= since)
+    if user_id is not None:
+        q = q.filter(AccessAuditLog.user_id == user_id)
+    if patient_id is not None:
+        q = q.filter(AccessAuditLog.patient_id == patient_id)
+    if resource_type:
+        q = q.filter(AccessAuditLog.resource_type == resource_type)
+    if action:
+        q = q.filter(AccessAuditLog.action == action)
+    entries = q.order_by(AccessAuditLog.created_at.desc()).limit(limit).all()
+    return [
+        {
+            "id": e.id,
+            "created_at": e.created_at.isoformat() if e.created_at else None,
+            "user_id": e.user_id,
+            "user_email": e.user_email,
+            "user_role": e.user_role,
+            "resource_type": e.resource_type,
+            "resource_id": e.resource_id,
+            "patient_id": e.patient_id,
+            "action": e.action,
+            "ip_address": e.ip_address,
+            "user_agent": e.user_agent,
+        }
+        for e in entries
     ]

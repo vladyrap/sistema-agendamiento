@@ -22,6 +22,7 @@ from .external_test import ExternalTestResult
 from .boleta import BoletaHonorarios, BoletaStatus
 from .ley_karin import LeyKarinAssessment, LeyKarinResponse, LeyKarinAssessmentStatus
 from .site_settings import SiteSettings
+from .access_audit_log import AccessAuditLog
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -36,4 +37,5 @@ __all__ = [
     "BoletaHonorarios", "BoletaStatus",
     "LeyKarinAssessment", "LeyKarinResponse", "LeyKarinAssessmentStatus",
     "SiteSettings",
+    "AccessAuditLog",
 ]

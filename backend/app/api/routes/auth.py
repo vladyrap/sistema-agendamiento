@@ -5,13 +5,17 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.models.user import User
 from app.models.user import UserRole
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, rate_limit
 from app.services.notifications import enqueue
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
+# Anti-abuso: 5 logins/min y 3 registros/5min por IP. Si cae Redis, fail-open (ver rate_limit_check).
+_login_limit = rate_limit("login", max_hits=5, window_seconds=60)
+_register_limit = rate_limit("register", max_hits=3, window_seconds=300)
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(_register_limit)])
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user_data.email).first():
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -67,7 +71,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, dependencies=[Depends(_login_limit)])
 def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
     if not user or not verify_password(credentials.password, user.password_hash):

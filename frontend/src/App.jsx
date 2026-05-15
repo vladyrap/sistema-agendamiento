@@ -63,6 +63,7 @@ import LeyKarinPublicForm from './pages/public/LeyKarinPublicForm'
 import AdminLeyKarin from './pages/admin/AdminLeyKarin'
 import AdminLeyKarinPrint from './pages/admin/AdminLeyKarinPrint'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminAuditLog from './pages/admin/AdminAuditLog'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -155,6 +156,7 @@ export default function App() {
           <Route path="gifts" element={<AdminGifts />} />
           <Route path="ley-karin" element={<AdminLeyKarin />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="audit-log" element={<AdminAuditLog />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
 

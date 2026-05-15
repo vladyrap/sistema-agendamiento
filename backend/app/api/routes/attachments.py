@@ -5,7 +5,7 @@ import logging
 from typing import List, Optional
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from app.models.user import User, UserRole
 from app.models.medical_attachment import MedicalAttachment, AttachmentCategory
 from app.schemas.medical_attachment import AttachmentResponse
 from app.api.deps import get_current_user
+from app.services import audit
 
 router = APIRouter(tags=["Adjuntos"])
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def _store_file(upload: UploadFile, patient_id: int) -> tuple[str, int]:
 
 @router.post("/me/attachments", response_model=AttachmentResponse, status_code=201)
 def upload_my_attachment(
+    request: Request,
     file: UploadFile = File(...),
     category: str = Form("other"),
     note: Optional[str] = Form(None),
@@ -82,12 +84,13 @@ def upload_my_attachment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return _create_attachment(db, file, category, note, appointment_id, current_user.id, current_user)
+    return _create_attachment(db, file, category, note, appointment_id, current_user.id, current_user, request)
 
 
 @router.post("/patients/{patient_id}/attachments", response_model=AttachmentResponse, status_code=201)
 def upload_attachment_for_patient(
     patient_id: int,
+    request: Request,
     file: UploadFile = File(...),
     category: str = Form("other"),
     note: Optional[str] = Form(None),
@@ -100,10 +103,10 @@ def upload_attachment_for_patient(
     target = db.query(User).filter(User.id == patient_id, User.role == UserRole.patient).first()
     if not target:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
-    return _create_attachment(db, file, category, note, appointment_id, patient_id, current_user)
+    return _create_attachment(db, file, category, note, appointment_id, patient_id, current_user, request)
 
 
-def _create_attachment(db, file, category, note, appointment_id, patient_id, uploader: User):
+def _create_attachment(db, file, category, note, appointment_id, patient_id, uploader: User, request: Optional[Request] = None):
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=400, detail=f"Tipo de archivo no permitido: {file.content_type}")
     try:
@@ -128,6 +131,10 @@ def _create_attachment(db, file, category, note, appointment_id, patient_id, upl
     db.commit()
     db.refresh(att)
     logger.info("attachment.uploaded", extra={"attachment_id": att.id, "patient_id": patient_id, "size": size})
+    audit.log_access(
+        db, uploader, audit.RESOURCE_ATTACHMENT, audit.ACTION_CREATE,
+        resource_id=att.id, patient_id=patient_id, request=request,
+    )
     return att
 
 
@@ -147,11 +154,16 @@ def list_my_attachments(
 @router.get("/patients/{patient_id}/attachments", response_model=List[AttachmentResponse])
 def list_patient_attachments(
     patient_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     if not _can_view_patient_attachments(current_user, patient_id):
         raise HTTPException(status_code=403, detail="Sin permisos")
+    audit.log_access(
+        db, current_user, audit.RESOURCE_ATTACHMENT, audit.ACTION_LIST,
+        patient_id=patient_id, request=request,
+    )
     return (
         db.query(MedicalAttachment)
         .filter(MedicalAttachment.patient_id == patient_id)
@@ -163,6 +175,7 @@ def list_patient_attachments(
 @router.get("/attachments/{attachment_id}/download")
 def download_attachment(
     attachment_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -175,6 +188,11 @@ def download_attachment(
     abs_path = Path(settings.UPLOAD_DIR) / att.storage_path
     if not abs_path.exists():
         raise HTTPException(status_code=410, detail="Archivo no disponible en disco")
+
+    audit.log_access(
+        db, current_user, audit.RESOURCE_ATTACHMENT, audit.ACTION_DOWNLOAD,
+        resource_id=att.id, patient_id=att.patient_id, request=request,
+    )
 
     def iterfile():
         with open(abs_path, "rb") as f:
@@ -194,6 +212,7 @@ def download_attachment(
 @router.delete("/attachments/{attachment_id}", status_code=204)
 def delete_attachment(
     attachment_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -206,7 +225,12 @@ def delete_attachment(
     if not (is_owner or is_uploader or current_user.role == UserRole.admin):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
+    patient_id_snapshot = att.patient_id
     abs_path = Path(settings.UPLOAD_DIR) / att.storage_path
     abs_path.unlink(missing_ok=True)
     db.delete(att)
     db.commit()
+    audit.log_access(
+        db, current_user, audit.RESOURCE_ATTACHMENT, audit.ACTION_DELETE,
+        resource_id=attachment_id, patient_id=patient_id_snapshot, request=request,
+    )

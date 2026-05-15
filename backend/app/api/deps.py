@@ -1,11 +1,34 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.redis_client import rate_limit_check
 from app.core.security import decode_token
 from app.models.user import User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+
+def _client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def rate_limit(bucket: str, max_hits: int, window_seconds: int):
+    """Dependency factory para rate limiting por IP. Bucket key: rl:{bucket}:{ip}."""
+    def checker(request: Request):
+        ip = _client_ip(request)
+        key = f"rl:{bucket}:{ip}"
+        allowed, count = rate_limit_check(key, max_hits, window_seconds)
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Demasiados intentos. Espera {window_seconds}s e intenta de nuevo.",
+                headers={"Retry-After": str(window_seconds)},
+            )
+    return checker
 
 
 def get_current_user(

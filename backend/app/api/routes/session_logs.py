@@ -1,5 +1,5 @@
 """Nota clínica estructurada por cita. Solo el médico de la cita la edita."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -10,6 +10,7 @@ from app.models.appointment import Appointment, AppointmentStatus
 from app.models.session_log import SessionLog
 from app.schemas.session_log import SessionLogUpsert, SessionLogResponse
 from app.api.deps import get_current_user
+from app.services import audit
 
 router = APIRouter(tags=["Nota clínica"])
 
@@ -26,6 +27,7 @@ def _check_doctor_access(db: Session, current_user: User, appt: Appointment) -> 
 @router.get("/appointments/{appointment_id}/session-log", response_model=SessionLogResponse | None)
 def get_session_log(
     appointment_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -43,13 +45,19 @@ def get_session_log(
     if not (is_patient or is_staff or is_appt_doctor):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
-    return db.query(SessionLog).filter(SessionLog.appointment_id == appointment_id).first()
+    log = db.query(SessionLog).filter(SessionLog.appointment_id == appointment_id).first()
+    audit.log_access(
+        db, current_user, audit.RESOURCE_SESSION_LOG, audit.ACTION_VIEW,
+        resource_id=log.id if log else None, patient_id=appt.patient_id, request=request,
+    )
+    return log
 
 
 @router.put("/appointments/{appointment_id}/session-log", response_model=SessionLogResponse)
 def upsert_session_log(
     appointment_id: int,
     data: SessionLogUpsert,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -65,6 +73,7 @@ def upsert_session_log(
 
     log = db.query(SessionLog).filter(SessionLog.appointment_id == appointment_id).first()
     payload = data.model_dump()
+    action = audit.ACTION_UPDATE if log else audit.ACTION_CREATE
     if not log:
         log = SessionLog(appointment_id=appointment_id, **payload)
         db.add(log)
@@ -79,4 +88,8 @@ def upsert_session_log(
 
     db.commit()
     db.refresh(log)
+    audit.log_access(
+        db, current_user, audit.RESOURCE_SESSION_LOG, action,
+        resource_id=log.id, patient_id=appt.patient_id, request=request,
+    )
     return log

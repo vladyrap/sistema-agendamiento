@@ -264,6 +264,7 @@ export const adminApi = {
   listAppointments:   (params) => api.get('/admin/appointments', { params }),
   createDoctor:       (data)   => api.post('/admin/doctors', data),
   createReceptionist: (data)   => api.post('/admin/receptionists', data),
+  auditLog:           (params) => api.get('/admin/audit-log', { params }),
 }
 
 export const patientsApi = {
