@@ -52,12 +52,14 @@ def test_book_appointment_succeeds_and_enqueues_notification(
     assert appt["start_time"] == "09:00:00"
     assert appt["end_time"] == "09:30:00"
 
-    # The notification worker queue should have one event.
+    # Al crear cita se encolan notificaciones (paciente y/o doctor).
     queued = fake_redis.lrange(QUEUE_KEY, 0, -1)
-    assert len(queued) == 1
-    event = json.loads(queued[0])
-    assert event["type"] == "appointment_created"
-    assert event["payload"]["patient_email"] == "paciente@test.cl"
+    assert len(queued) >= 1
+    events = [json.loads(q) for q in queued]
+    created = [e for e in events if e["type"] == "appointment_created"]
+    assert len(created) >= 1
+    # Algún destinatario tiene que ser el paciente que reservó.
+    assert any(e["payload"].get("to_email") == "paciente@test.cl" for e in created)
 
 
 def test_double_booking_rejected(client, doctor, patient_headers):
@@ -124,8 +126,8 @@ def test_patient_can_cancel_own_appointment(client, doctor, patient_headers, fak
     assert r.json()["status"] == "cancelled"
 
     queued = fake_redis.lrange(QUEUE_KEY, 0, -1)
-    assert len(queued) == 1
-    assert json.loads(queued[0])["type"] == "appointment_cancelled"
+    assert len(queued) >= 1
+    assert all(json.loads(q)["type"] == "appointment_cancelled" for q in queued)
 
 
 def test_listing_only_returns_my_appointments(client, doctor, patient_headers, db_session):
