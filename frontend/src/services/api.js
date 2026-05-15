@@ -56,6 +56,12 @@ export const boletasApi = {
   remove:         (id)               => api.delete(`/boletas/${id}`),
 }
 
+export const siteSettingsApi = {
+  publicGet: ()       => api.get('/site-settings/public'),
+  adminGet:  ()       => api.get('/admin/site-settings'),
+  adminPut:  (data)   => api.put('/admin/site-settings', data),
+}
+
 export const leyKarinApi = {
   instrument:      ()                       => api.get('/ley-karin/instrument'),
   list:            (params)                 => api.get('/ley-karin/assessments', { params }),

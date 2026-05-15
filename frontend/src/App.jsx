@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SiteSettingsProvider } from './context/SiteSettingsContext'
 
 import LandingPage from './pages/public/LandingPage'
 import LoginPage from './pages/auth/LoginPage'
@@ -61,6 +62,7 @@ import LeyKarinLanding from './pages/public/LeyKarinLanding'
 import LeyKarinPublicForm from './pages/public/LeyKarinPublicForm'
 import AdminLeyKarin from './pages/admin/AdminLeyKarin'
 import AdminLeyKarinPrint from './pages/admin/AdminLeyKarinPrint'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -85,6 +87,7 @@ function RootEntry() {
 export default function App() {
   return (
     <AuthProvider>
+      <SiteSettingsProvider>
       <Routes>
         <Route path="/" element={<RootEntry />} />
         <Route path="/login" element={<LoginPage />} />
@@ -151,6 +154,7 @@ export default function App() {
           <Route path="companies" element={<AdminCompanies />} />
           <Route path="gifts" element={<AdminGifts />} />
           <Route path="ley-karin" element={<AdminLeyKarin />} />
+          <Route path="settings" element={<AdminSettings />} />
           <Route path="patients/:id" element={<PatientFullProfile />} />
         </Route>
 
@@ -187,6 +191,7 @@ export default function App() {
       <ChatWidget />
       <InstallPrompt />
       <UpdatePrompt />
+      </SiteSettingsProvider>
     </AuthProvider>
   )
 }

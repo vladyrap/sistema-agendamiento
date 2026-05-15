@@ -6,6 +6,10 @@ import {
 } from 'lucide-react'
 import { Logo, LogoMark } from '../../components/ui/Logo'
 import { Button } from '../../components/ui/Button'
+import { useSiteSettings, buildWhatsappUrl } from '../../context/SiteSettingsContext'
+
+const MSG_DIAGNOSTICO = 'Hola Calmar 👋 Quiero solicitar un diagnóstico Ley Karin para mi empresa.'
+const MSG_CONSULTOR   = 'Hola Calmar 👋 Quiero hablar con un/a consultor/a sobre la Ley Karin.'
 
 const REQUISITOS = [
   { icon: FileText,        title: 'Protocolo escrito',        desc: 'Protocolo de prevención de acoso laboral, sexual y violencia, formalizado y comunicado.' },
@@ -24,6 +28,11 @@ const PASOS = [
 ]
 
 export default function LeyKarinLanding() {
+  const { settings } = useSiteSettings()
+  const waDiagnostico = buildWhatsappUrl(settings.whatsapp_number, MSG_DIAGNOSTICO)
+  const waConsultor   = buildWhatsappUrl(settings.whatsapp_number, MSG_CONSULTOR)
+  const emailHref = `mailto:${settings.contact_email || 'hola@miespejo.cl'}?subject=Consulta%20Ley%20Karin`
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-50/40 via-white to-white">
       {/* Header */}
@@ -55,8 +64,10 @@ export default function LeyKarinLanding() {
             cuestionario oficial SUSESO/ISTAS-21 y un plan de acción concreto.
           </p>
           <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
-            <a href="mailto:hola@miespejo.cl?subject=Solicito%20diagn%C3%B3stico%20Ley%20Karin">
-              <Button size="lg">Solicitar diagnóstico <ArrowRight className="w-4 h-4" /></Button>
+            <a href={waDiagnostico || emailHref} target="_blank" rel="noopener noreferrer">
+              <Button size="lg">
+                {waDiagnostico ? 'Solicitar por WhatsApp' : 'Solicitar diagnóstico'} <ArrowRight className="w-4 h-4" />
+              </Button>
             </a>
             <Link to="/login"><Button variant="ghost" size="lg">Ya soy cliente</Button></Link>
           </div>
@@ -118,7 +129,11 @@ export default function LeyKarinLanding() {
           Conversamos contigo en menos de 24 horas hábiles.
         </p>
         <div className="flex items-center justify-center gap-3 mt-7 flex-wrap">
-          <a href="mailto:hola@miespejo.cl?subject=Diagn%C3%B3stico%20Ley%20Karin%20-%20Empresa"><Button size="lg">Hablar con un/a consultor/a <ArrowRight className="w-4 h-4" /></Button></a>
+          <a href={waConsultor || emailHref} target="_blank" rel="noopener noreferrer">
+            <Button size="lg">
+              {waConsultor ? 'Hablar por WhatsApp' : 'Contactar consultor'} <ArrowRight className="w-4 h-4" />
+            </Button>
+          </a>
         </div>
         <p className="text-[11px] text-ink-400 mt-6">
           Calmar es una plataforma de psicología clínica y organizacional con psicólogos verificados.

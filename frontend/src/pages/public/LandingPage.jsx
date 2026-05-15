@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import {
   Search, Calendar, Bell, Stethoscope, Brain, HeartPulse, Baby, Eye, Bone,
-  ShieldCheck, Sparkles, ArrowRight, Star, Check, Video, Building2, FileText, BarChart3,
+  ShieldCheck, Sparkles, ArrowRight, Star, Check, Video, Building2, FileText, BarChart3, MessageCircle,
 } from 'lucide-react'
+import { useSiteSettings, buildWhatsappUrl } from '../../context/SiteSettingsContext'
 import { Button } from '../../components/ui/Button'
 import { Logo, LogoMark } from '../../components/ui/Logo'
 import { Avatar } from '../../components/ui/Avatar'
@@ -74,6 +75,12 @@ export default function LandingPage() {
   const heroOpacity  = useTransform(scrollY, [0, 600], [1, 0.3])
 
   const spotlightRef = useMouseSpotlight()
+  const { settings } = useSiteSettings()
+  const waConsultor = buildWhatsappUrl(
+    settings.whatsapp_number,
+    'Hola Calmar 👋 Quiero hablar con un/a consultor/a sobre la Ley Karin para mi empresa.',
+  )
+  const emailHref = `mailto:${settings.contact_email || 'hola@miespejo.cl'}?subject=Consulta%20Ley%20Karin%20-%20Empresa`
 
   return (
     <div className="relative bg-ink-950 text-white overflow-x-hidden selection:bg-fuchsia-500/30 selection:text-white">
@@ -358,9 +365,9 @@ export default function LandingPage() {
                       Ver propuesta para empresas <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <a href="mailto:hola@miespejo.cl?subject=Consulta%20Ley%20Karin%20-%20Empresa">
+                  <a href={waConsultor || emailHref} target="_blank" rel="noopener noreferrer">
                     <Button size="lg" variant="ghost" className="text-white/80 hover:text-white border border-white/15 bg-white/5 hover:bg-white/10 backdrop-blur">
-                      Hablar con un consultor
+                      <MessageCircle className="w-4 h-4" /> {waConsultor ? 'Hablar por WhatsApp' : 'Contactar consultor'}
                     </Button>
                   </a>
                 </div>

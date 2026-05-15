@@ -21,6 +21,7 @@ from .gift_card import GiftCard, UserCredit, CreditTransaction
 from .external_test import ExternalTestResult
 from .boleta import BoletaHonorarios, BoletaStatus
 from .ley_karin import LeyKarinAssessment, LeyKarinResponse, LeyKarinAssessmentStatus
+from .site_settings import SiteSettings
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -34,4 +35,5 @@ __all__ = [
     "ExternalTestResult",
     "BoletaHonorarios", "BoletaStatus",
     "LeyKarinAssessment", "LeyKarinResponse", "LeyKarinAssessmentStatus",
+    "SiteSettings",
 ]
