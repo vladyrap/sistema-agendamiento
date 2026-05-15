@@ -210,10 +210,15 @@ def payments_health(db: Session = Depends(get_db)):
     if public_url.startswith("http://localhost") or "localhost" in public_url:
         issues.append("APP_PUBLIC_URL apunta a localhost: MercadoPago no podrá llamar el webhook desde Internet.")
 
+    # Mostramos los primeros 16 chars del token (sin el secret completo) para
+    # poder distinguir credenciales de "Prueba" vs "Productivas" — ambas usan
+    # el prefijo APP_USR- pero los chars después difieren.
+    token_preview = (tk[:16] + "…" + tk[-4:]) if len(tk) > 20 else (tk[:8] + "…" if tk else None)
+
     return {
         "enabled": has_token,
         "mode": "production" if is_prod else ("sandbox" if has_token else "disabled"),
-        "token_prefix": tk[:8] + "…" if tk else None,
+        "token_preview": token_preview,
         "webhook_signature_validation": has_secret,
         "app_public_url": public_url,
         "webhook_url": f"{public_url.rstrip('/')}/api/webhooks/mercadopago",
