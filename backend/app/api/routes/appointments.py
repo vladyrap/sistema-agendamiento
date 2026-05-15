@@ -717,3 +717,38 @@ def appointment_ics(
             "Content-Disposition": f'attachment; filename="cita-{appt.id}.ics"',
         },
     )
+
+
+# ─── Briefing pre-sesión generado por IA ──────────────────────────────────
+@router.get("/{appointment_id}/briefing")
+def get_appointment_briefing(
+    appointment_id: int,
+    refresh: bool = Query(default=False, description="Forzar regeneración ignorando cache"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Genera (o devuelve cacheado) un briefing clínico para la sesión.
+
+    Solo el psicólogo/a dueño/a de la cita o admin pueden invocarlo. Cachea 4h
+    en Redis para no quemar quota de Gemini.
+    """
+    from app.services import briefing as briefing_svc
+
+    appt = _load_appointment(db, appointment_id)
+
+    doctor_self = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    is_appt_doctor = doctor_self and doctor_self.id == appt.doctor_id
+    is_admin = current_user.role == UserRole.admin
+    if not (is_appt_doctor or is_admin):
+        raise HTTPException(status_code=403, detail="Solo el psicólogo/a de la cita puede ver este briefing")
+
+    if refresh:
+        briefing_svc.invalidate_cache(appointment_id)
+
+    return briefing_svc.generate_briefing(
+        db=db,
+        appointment_id=appointment_id,
+        patient_id=appt.patient_id,
+        doctor_id=appt.doctor_id,
+        force_refresh=refresh,
+    )

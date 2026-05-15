@@ -187,6 +187,7 @@ export const appointmentsApi = {
   meeting:    (id)           => api.get(`/appointments/${id}/meeting`),
   icsUrl:     (id)           => `/api/appointments/${id}/calendar.ics`,
   cancelDay:  (data)         => api.post('/appointments/cancel-day', data),
+  briefing:   (id, refresh = false) => api.get(`/appointments/${id}/briefing`, { params: refresh ? { refresh: true } : {} }),
 }
 
 export const doctorBlocksApi = {

@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { Input, Label, Textarea } from '../ui/Input'
 import { Spinner } from '../ui/Spinner'
 import { cn } from '../../lib/cn'
+import PatientBriefing from '../clinical/PatientBriefing'
 
 const empty = {
   diagnosis: '', evolution: '', observations: '', indications: '',
@@ -85,6 +86,10 @@ export function SessionLogForm({ open, onClose, appointment, onSaved }) {
         <div className="py-10 flex justify-center"><Spinner /></div>
       ) : (
         <div className="space-y-5">
+          {appointment?.id && data.is_draft && (
+            <PatientBriefing appointmentId={appointment.id} defaultOpen />
+          )}
+
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
             {isPsych ? <Brain className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
             {isPsych ? 'Plantilla psicología' : 'Plantilla general'}

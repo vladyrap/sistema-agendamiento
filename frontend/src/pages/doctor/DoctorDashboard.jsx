@@ -17,6 +17,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { fadeInUp, stagger, staggerItem } from '../../lib/motion'
 import DoctorMoodFeed from '../../components/mood/DoctorMoodFeed'
 import DoctorHomeworkFeed from '../../components/homework/DoctorHomeworkFeed'
+import PatientBriefing from '../../components/clinical/PatientBriefing'
 
 export default function DoctorDashboard() {
   const { user } = useAuth()
@@ -117,6 +118,12 @@ export default function DoctorDashboard() {
           </motion.div>
         ))}
       </motion.div>
+
+      {next && (
+        <motion.div {...fadeInUp}>
+          <PatientBriefing appointmentId={next.id} defaultOpen={false} compact />
+        </motion.div>
+      )}
 
       {boletasPending.count > 0 && (
         <motion.div {...fadeInUp}>
