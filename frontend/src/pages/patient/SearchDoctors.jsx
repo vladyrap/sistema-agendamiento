@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, SlidersHorizontal, Stethoscope, Brain, Sparkles } from 'lucide-react'
+import { Search, SlidersHorizontal, Stethoscope, Brain, Sparkles, ArrowUpDown } from 'lucide-react'
 import { doctorsApi, specialtiesApi } from '../../services/api'
 import { Input } from '../../components/ui/Input'
 import { DoctorCard } from '../../components/patient/DoctorCard'
@@ -22,6 +22,8 @@ export default function SearchDoctors() {
   const [query, setQuery] = useState('')
   const [modality, setModality] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [maxPrice, setMaxPrice] = useState('')
+  const [sortBy, setSortBy] = useState('rating')  // rating | price_asc | price_desc | name
 
   useEffect(() => {
     specialtiesApi.list().then((r) => setSpecialties(r.data))
@@ -36,12 +38,22 @@ export default function SearchDoctors() {
   }, [specialtyId])
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return doctors
-    const q = query.toLowerCase()
-    return doctors.filter((d) =>
-      `${d.user.first_name} ${d.user.last_name} ${d.specialty.name}`.toLowerCase().includes(q),
-    )
-  }, [doctors, query])
+    const q = query.trim().toLowerCase()
+    const maxP = maxPrice ? parseInt(maxPrice) : null
+    let out = doctors.filter((d) => {
+      if (q && !`${d.user.first_name} ${d.user.last_name} ${d.specialty.name}`.toLowerCase().includes(q)) return false
+      if (maxP !== null && (d.consultation_price || 0) > maxP) return false
+      return true
+    })
+    out = [...out].sort((a, b) => {
+      if (sortBy === 'price_asc')  return (a.consultation_price || 0) - (b.consultation_price || 0)
+      if (sortBy === 'price_desc') return (b.consultation_price || 0) - (a.consultation_price || 0)
+      if (sortBy === 'name')       return `${a.user.first_name} ${a.user.last_name}`.localeCompare(`${b.user.first_name} ${b.user.last_name}`)
+      // rating (default)
+      return (b.rating_avg ?? 0) - (a.rating_avg ?? 0)
+    })
+    return out
+  }, [doctors, query, maxPrice, sortBy])
 
   return (
     <div className="space-y-8">
@@ -112,6 +124,38 @@ export default function SearchDoctors() {
                 {m.label}
               </button>
             ))}
+          </div>
+
+          {/* Filtros secundarios: precio máximo + orden */}
+          <div className="flex flex-wrap items-center gap-3 mt-4 text-xs">
+            <label className="inline-flex items-center gap-1.5 text-ink-600">
+              Precio máximo
+              <input
+                type="number"
+                min={0}
+                step={1000}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="Sin tope"
+                className="h-9 w-28 rounded-xl border border-ink-200 px-2 text-sm bg-white tabular-nums"
+              />
+              <span className="text-ink-400">CLP</span>
+            </label>
+            <label className="inline-flex items-center gap-1.5 text-ink-600">
+              <ArrowUpDown className="w-3 h-3" />
+              Ordenar
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="h-9 rounded-xl border border-ink-200 bg-white px-2 text-sm">
+                <option value="rating">Mejor evaluación</option>
+                <option value="price_asc">Menor precio</option>
+                <option value="price_desc">Mayor precio</option>
+                <option value="name">Nombre A-Z</option>
+              </select>
+            </label>
+            {(query || maxPrice || sortBy !== 'rating' || specialtyId) && (
+              <button type="button" onClick={() => { setQuery(''); setMaxPrice(''); setSortBy('rating'); setSpecialtyId('') }} className="text-ink-500 hover:text-ink-900 underline">
+                Limpiar filtros
+              </button>
+            )}
           </div>
         </motion.div>
       </section>

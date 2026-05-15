@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  FileText, Plus, Pencil, Trash2, CalendarClock, User, Sparkles,
+  FileText, Plus, Pencil, Trash2, CalendarClock, User, Sparkles, Filter,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { externalTestsApi } from '../../services/api'
@@ -39,6 +39,9 @@ export default function ExternalTestsSection({ patientId, canManage = true, clas
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   async function load() {
     setLoading(true)
@@ -53,6 +56,21 @@ export default function ExternalTestsSection({ patientId, canManage = true, clas
   }
 
   useEffect(() => { load() }, [patientId])
+
+  const availableCategories = useMemo(() => {
+    const set = new Set()
+    items.forEach((t) => { if (t.category) set.add(t.category) })
+    return Array.from(set).sort()
+  }, [items])
+
+  const filtered = useMemo(() => {
+    return items.filter((t) => {
+      if (categoryFilter !== 'all' && t.category !== categoryFilter) return false
+      if (fromDate && t.applied_at && t.applied_at < fromDate) return false
+      if (toDate && t.applied_at && t.applied_at > toDate) return false
+      return true
+    })
+  }, [items, categoryFilter, fromDate, toDate])
 
   async function remove(t) {
     if (!window.confirm(`¿Borrar el registro del test "${t.test_name}"?`)) return
@@ -96,6 +114,34 @@ export default function ExternalTestsSection({ patientId, canManage = true, clas
         />
       )}
 
+      {items.length > 1 && !adding && !editing && (
+        <div className="flex items-center gap-2 flex-wrap text-xs border-t border-ink-100 pt-3">
+          <div className="inline-flex items-center gap-1.5">
+            <Filter className="w-3 h-3 text-ink-400" />
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="h-8 rounded-lg border border-ink-200 bg-white px-2 text-xs">
+              <option value="all">Todas las categorías</option>
+              {availableCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <label className="inline-flex items-center gap-1 text-ink-600">
+            Desde
+            <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-8 rounded-lg border border-ink-200 bg-white px-2 text-xs" />
+          </label>
+          <label className="inline-flex items-center gap-1 text-ink-600">
+            Hasta
+            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-8 rounded-lg border border-ink-200 bg-white px-2 text-xs" />
+          </label>
+          {(categoryFilter !== 'all' || fromDate || toDate) && (
+            <button type="button" onClick={() => { setCategoryFilter('all'); setFromDate(''); setToDate('') }} className="text-ink-500 hover:text-ink-900 underline">
+              Limpiar
+            </button>
+          )}
+          <span className="text-[10px] text-ink-400 ml-auto">
+            {filtered.length === items.length ? `${items.length}` : `${filtered.length} de ${items.length}`}
+          </span>
+        </div>
+      )}
+
       {loading ? (
         <div className="py-8 flex justify-center"><Spinner /></div>
       ) : items.length === 0 ? (
@@ -108,7 +154,7 @@ export default function ExternalTestsSection({ patientId, canManage = true, clas
         )
       ) : (
         <div className="space-y-2.5">
-          {items.map((t) => (
+          {filtered.map((t) => (
             <motion.div
               key={t.id}
               layout

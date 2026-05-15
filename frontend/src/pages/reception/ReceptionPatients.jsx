@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import { Search, UserPlus, Phone, Mail, IdCard, Copy, Check, Users, FileText } from 'lucide-react'
+import { Search, UserPlus, Phone, Mail, IdCard, Copy, Check, Users, FileText, Filter } from 'lucide-react'
 import { patientsApi } from '../../services/api'
 import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -24,6 +24,8 @@ export default function ReceptionPatients() {
   const [submitting, setSubmitting] = useState(false)
   const [credentials, setCredentials] = useState(null) // { email, password }
   const [copied, setCopied] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [missingFilter, setMissingFilter] = useState('all')  // all | no_rut | no_phone
 
   const search = (q) => {
     setLoading(true)
@@ -34,6 +36,15 @@ export default function ReceptionPatients() {
     const t = setTimeout(() => search(query), 250)
     return () => clearTimeout(t)
   }, [query])
+
+  const filteredResults = useMemo(() => {
+    return results.filter((u) => {
+      if (statusFilter !== 'all' && (u.patient_status || 'active') !== statusFilter) return false
+      if (missingFilter === 'no_rut'   && u.rut) return false
+      if (missingFilter === 'no_phone' && u.phone) return false
+      return true
+    })
+  }, [results, statusFilter, missingFilter])
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
@@ -81,17 +92,43 @@ export default function ReceptionPatients() {
         </Button>
       </div>
 
-      <Input
-        placeholder="Buscar por nombre, email o RUT..."
-        leftIcon={Search}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="h-12 text-base"
-      />
+      <Card className="p-4 flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <Input
+            placeholder="Buscar por nombre, email o RUT..."
+            leftIcon={Search}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="inline-flex items-center gap-1.5">
+          <Filter className="w-4 h-4 text-ink-500" />
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm">
+            <option value="all">Todos los estados</option>
+            <option value="active">Activos</option>
+            <option value="in_treatment">En tratamiento</option>
+            <option value="inactive">Inactivos</option>
+            <option value="discharged">Dados de alta</option>
+          </select>
+        </div>
+        <select value={missingFilter} onChange={(e) => setMissingFilter(e.target.value)} className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm">
+          <option value="all">Datos completos o no</option>
+          <option value="no_rut">Sin RUT</option>
+          <option value="no_phone">Sin teléfono</option>
+        </select>
+        {(statusFilter !== 'all' || missingFilter !== 'all' || query) && (
+          <button type="button" onClick={() => { setQuery(''); setStatusFilter('all'); setMissingFilter('all') }} className="text-xs text-ink-500 hover:text-ink-900 px-2">
+            Limpiar
+          </button>
+        )}
+        <span className="text-[11px] text-ink-500 ml-auto">
+          {filteredResults.length === results.length ? `${results.length}` : `${filteredResults.length} de ${results.length}`}
+        </span>
+      </Card>
 
       {loading ? (
         <div className="py-16 flex justify-center"><Spinner size="lg" /></div>
-      ) : results.length === 0 ? (
+      ) : filteredResults.length === 0 ? (
         <EmptyState
           icon={Users}
           title="Sin resultados"
@@ -109,7 +146,7 @@ export default function ReceptionPatients() {
                 </tr>
               </thead>
               <tbody>
-                {results.map((u) => (
+                {filteredResults.map((u) => (
                   <tr key={u.id} className="border-b border-ink-100 last:border-b-0 hover:bg-ink-50/40 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">

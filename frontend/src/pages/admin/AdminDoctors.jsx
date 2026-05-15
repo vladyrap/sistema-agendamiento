@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Plus, Stethoscope } from 'lucide-react'
+import { Plus, Stethoscope, Search, Filter } from 'lucide-react'
 import { adminApi, doctorsApi, specialtiesApi, clinicsApi } from '../../services/api'
 import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -29,8 +29,26 @@ export default function AdminDoctors() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState(empty)
+  // Filtros de la lista
+  const [q, setQ] = useState('')
+  const [specialtyFilter, setSpecialtyFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')  // all | active | inactive
 
   const loadDoctors = () => doctorsApi.list().then((r) => setDoctors(r.data))
+
+  const filteredDoctors = useMemo(() => {
+    const ql = q.trim().toLowerCase()
+    return doctors.filter((d) => {
+      if (specialtyFilter && d.specialty?.id !== parseInt(specialtyFilter)) return false
+      if (statusFilter === 'active'   && d.is_active === false) return false
+      if (statusFilter === 'inactive' && d.is_active !== false) return false
+      if (ql) {
+        const haystack = `${d.user.first_name} ${d.user.last_name} ${d.user.email} ${d.specialty?.name || ''} ${d.license_number || ''}`.toLowerCase()
+        if (!haystack.includes(ql)) return false
+      }
+      return true
+    })
+  }, [doctors, q, specialtyFilter, statusFilter])
 
   useEffect(() => {
     Promise.all([
@@ -135,16 +153,57 @@ export default function AdminDoctors() {
         <Card className="p-6">
           <CardHeader className="p-0 pb-5">
             <CardTitle>Plantel actual</CardTitle>
-            <CardDescription>{doctors.length} {doctors.length === 1 ? 'profesional registrado' : 'profesionales registrados'}.</CardDescription>
+            <CardDescription>
+              {filteredDoctors.length === doctors.length
+                ? `${doctors.length} ${doctors.length === 1 ? 'profesional registrado' : 'profesionales registrados'}.`
+                : `Mostrando ${filteredDoctors.length} de ${doctors.length}.`}
+            </CardDescription>
           </CardHeader>
+
+          {/* Filtros */}
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="w-3.5 h-3.5 text-ink-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por nombre, email, licencia…"
+                className="w-full h-9 rounded-xl border border-ink-200 pl-8 pr-3 text-xs bg-white focus:outline-none focus:border-brand-400"
+              />
+            </div>
+            <div className="inline-flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-ink-400" />
+              <select
+                value={specialtyFilter}
+                onChange={(e) => setSpecialtyFilter(e.target.value)}
+                className="h-9 rounded-xl border border-ink-200 bg-white px-2 text-xs"
+              >
+                <option value="">Todas las especialidades</option>
+                {specialties.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-9 rounded-xl border border-ink-200 bg-white px-2 text-xs"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
 
           {loading ? (
             <div className="py-10 flex justify-center"><Spinner /></div>
-          ) : doctors.length === 0 ? (
-            <EmptyState icon={Stethoscope} title="Sin psicólogos/as" description="Crea el primero usando el formulario." />
+          ) : filteredDoctors.length === 0 ? (
+            <EmptyState
+              icon={Stethoscope}
+              title={doctors.length === 0 ? "Sin psicólogos/as" : "Sin resultados"}
+              description={doctors.length === 0 ? "Crea el primero usando el formulario." : "Probá ajustar la búsqueda o los filtros."}
+            />
           ) : (
             <ul className="divide-y divide-ink-100">
-              {doctors.map((d) => (
+              {filteredDoctors.map((d) => (
                 <li key={d.id} className="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
                   <Avatar name={`${d.user.first_name} ${d.user.last_name}`} size="sm" />
                   <div className="flex-1 min-w-0">

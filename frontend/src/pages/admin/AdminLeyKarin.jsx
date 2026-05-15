@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  ShieldCheck, Plus, Copy, ExternalLink, Play, Square, Trash2, BarChart3, AlertTriangle, Users, Lock, Printer,
+  ShieldCheck, Plus, Copy, ExternalLink, Play, Square, Trash2, BarChart3, AlertTriangle, Users, Lock, Printer, Search, Filter,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { leyKarinApi, companiesApi } from '../../services/api'
@@ -33,6 +33,10 @@ export default function AdminLeyKarin() {
   const [creating, setCreating] = useState(false)
   const [selected, setSelected] = useState(null)
   const navigate = useNavigate()
+  // Filtros
+  const [q, setQ] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [companyFilter, setCompanyFilter] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -49,6 +53,16 @@ export default function AdminLeyKarin() {
   }
 
   useEffect(load, [isCompanyAdmin])
+
+  const filtered = useMemo(() => {
+    const ql = q.trim().toLowerCase()
+    return items.filter((a) => {
+      if (ql && !(`${a.title} ${a.company_name || ''}`).toLowerCase().includes(ql)) return false
+      if (statusFilter !== 'all' && a.status !== statusFilter) return false
+      if (companyFilter && a.company_id !== parseInt(companyFilter)) return false
+      return true
+    })
+  }, [items, q, statusFilter, companyFilter])
 
   return (
     <div className="space-y-7">
@@ -67,6 +81,52 @@ export default function AdminLeyKarin() {
         </Button>
       </motion.div>
 
+      {/* Filtros */}
+      {items.length > 0 && (
+        <Card className="p-4 flex items-center gap-2 flex-wrap">
+          <div className="flex-1 min-w-[220px] relative">
+            <Search className="w-3.5 h-3.5 text-ink-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar por título o empresa…"
+              className="w-full h-10 rounded-xl border border-ink-200 pl-9 pr-3 text-sm bg-white focus:outline-none focus:border-brand-400"
+            />
+          </div>
+          <div className="inline-flex items-center gap-1.5">
+            <Filter className="w-4 h-4 text-ink-500" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="draft">Borradores</option>
+              <option value="active">Activas</option>
+              <option value="closed">Cerradas</option>
+            </select>
+          </div>
+          {!isCompanyAdmin && companies.length > 1 && (
+            <select
+              value={companyFilter}
+              onChange={(e) => setCompanyFilter(e.target.value)}
+              className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm"
+            >
+              <option value="">Todas las empresas</option>
+              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          )}
+          {(q || statusFilter !== 'all' || companyFilter) && (
+            <button type="button" onClick={() => { setQ(''); setStatusFilter('all'); setCompanyFilter('') }} className="text-xs text-ink-500 hover:text-ink-900 px-2">
+              Limpiar
+            </button>
+          )}
+          <span className="text-[11px] text-ink-500 ml-auto">
+            {filtered.length === items.length ? `${items.length} total` : `${filtered.length} de ${items.length}`}
+          </span>
+        </Card>
+      )}
+
       {loading ? (
         <div className="py-16 flex justify-center"><Spinner size="lg" /></div>
       ) : items.length === 0 ? (
@@ -77,9 +137,17 @@ export default function AdminLeyKarin() {
             description="Crea la primera campaña para una empresa cliente. Recibirás un link público para que sus trabajadores respondan de forma anónima."
           />
         </Card>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={ShieldCheck}
+            title="Sin resultados"
+            description="Probá ajustar la búsqueda o los filtros."
+          />
+        </Card>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((a) => (
+          {filtered.map((a) => (
             <AssessmentCard
               key={a.id}
               a={a}

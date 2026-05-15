@@ -34,6 +34,8 @@ export default function AdminGifts() {
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   async function load() {
     setLoading(true)
@@ -50,15 +52,25 @@ export default function AdminGifts() {
   useEffect(() => { load() }, [filter])
 
   const filtered = useMemo(() => {
-    if (!q.trim()) return items
-    const ql = q.toLowerCase()
-    return items.filter((g) =>
-      g.code.toLowerCase().includes(ql) ||
-      (g.buyer_email || '').toLowerCase().includes(ql) ||
-      g.recipient_email.toLowerCase().includes(ql) ||
-      g.recipient_name.toLowerCase().includes(ql),
-    )
-  }, [items, q])
+    const ql = q.trim().toLowerCase()
+    return items.filter((g) => {
+      if (ql) {
+        const matches =
+          g.code.toLowerCase().includes(ql) ||
+          (g.buyer_email || '').toLowerCase().includes(ql) ||
+          g.recipient_email.toLowerCase().includes(ql) ||
+          g.recipient_name.toLowerCase().includes(ql)
+        if (!matches) return false
+      }
+      if (fromDate && g.created_at) {
+        if (g.created_at.slice(0, 10) < fromDate) return false
+      }
+      if (toDate && g.created_at) {
+        if (g.created_at.slice(0, 10) > toDate) return false
+      }
+      return true
+    })
+  }, [items, q, fromDate, toDate])
 
   const totalActive = items.filter((g) => g.status === 'active').reduce((a, g) => a + g.amount_clp, 0)
   const totalRedeemed = items.filter((g) => g.status === 'redeemed').reduce((a, g) => a + g.amount_clp, 0)
@@ -98,6 +110,22 @@ export default function AdminGifts() {
             <option value="cancelled">Canceladas</option>
           </select>
         </div>
+        <label className="inline-flex items-center gap-1.5 text-xs text-ink-600">
+          Desde
+          <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-10 rounded-xl border border-ink-200 bg-white px-2 text-sm" />
+        </label>
+        <label className="inline-flex items-center gap-1.5 text-xs text-ink-600">
+          Hasta
+          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-10 rounded-xl border border-ink-200 bg-white px-2 text-sm" />
+        </label>
+        {(q || filter || fromDate || toDate) && (
+          <button type="button" onClick={() => { setQ(''); setFilter(''); setFromDate(''); setToDate('') }} className="text-xs text-ink-500 hover:text-ink-900 px-2">
+            Limpiar
+          </button>
+        )}
+        <span className="text-[11px] text-ink-500 ml-auto">
+          {filtered.length === items.length ? `${items.length} total` : `${filtered.length} de ${items.length}`}
+        </span>
       </Card>
 
       {loading ? (

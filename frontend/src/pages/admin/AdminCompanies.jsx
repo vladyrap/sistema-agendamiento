@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
   Building2, Plus, Search, Mail, Phone, IdCard, ChevronRight, X, Save, Trash2,
-  TrendingUp, Users, Sparkles, ChevronLeft, Send, Shield, Pencil,
+  TrendingUp, Users, Sparkles, ChevronLeft, Send, Shield, Pencil, Filter,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { companiesApi } from '../../services/api'
@@ -24,6 +24,8 @@ export default function AdminCompanies() {
   const [editing, setEditing] = useState(null)  // company en edición/nueva
   const [drillCompany, setDrillCompany] = useState(null)  // company para gestionar miembros
   const [q, setQ] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')  // all | active | inactive
+  const [poolFilter, setPoolFilter] = useState('all')      // all | with_pool | no_pool
 
   async function load() {
     setLoading(true)
@@ -39,9 +41,17 @@ export default function AdminCompanies() {
 
   useEffect(() => { load() }, [])
 
-  const filtered = companies.filter((c) =>
-    !q || c.name.toLowerCase().includes(q.toLowerCase()) || (c.rut || '').includes(q),
-  )
+  const filtered = useMemo(() => {
+    const ql = q.trim().toLowerCase()
+    return companies.filter((c) => {
+      if (ql && !c.name.toLowerCase().includes(ql) && !(c.rut || '').includes(ql)) return false
+      if (statusFilter === 'active'   && c.is_active === false) return false
+      if (statusFilter === 'inactive' && c.is_active !== false) return false
+      if (poolFilter === 'with_pool' && (c.sessions_pool || 0) <= 0) return false
+      if (poolFilter === 'no_pool'   && (c.sessions_pool || 0) > 0) return false
+      return true
+    })
+  }, [companies, q, statusFilter, poolFilter])
 
   if (drillCompany) {
     return <CompanyDetail
@@ -80,9 +90,44 @@ export default function AdminCompanies() {
         )}
       </AnimatePresence>
 
-      {/* Búsqueda */}
-      <Card className="p-4">
-        <Input leftIcon={Search} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o RUT..." />
+      {/* Filtros */}
+      <Card className="p-4 flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <Input leftIcon={Search} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o RUT..." />
+        </div>
+        <div className="inline-flex items-center gap-1.5">
+          <Filter className="w-4 h-4 text-ink-500" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm"
+          >
+            <option value="all">Todos los estados</option>
+            <option value="active">Activas</option>
+            <option value="inactive">Inactivas</option>
+          </select>
+        </div>
+        <select
+          value={poolFilter}
+          onChange={(e) => setPoolFilter(e.target.value)}
+          className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm"
+        >
+          <option value="all">Todo el pool</option>
+          <option value="with_pool">Con sesiones disponibles</option>
+          <option value="no_pool">Sin sesiones</option>
+        </select>
+        {(q || statusFilter !== 'all' || poolFilter !== 'all') && (
+          <button
+            type="button"
+            onClick={() => { setQ(''); setStatusFilter('all'); setPoolFilter('all') }}
+            className="text-xs text-ink-500 hover:text-ink-900 px-2"
+          >
+            Limpiar
+          </button>
+        )}
+        <span className="text-[11px] text-ink-500 ml-auto">
+          {filtered.length === companies.length ? `${companies.length} total` : `${filtered.length} de ${companies.length}`}
+        </span>
       </Card>
 
       {/* Lista */}
