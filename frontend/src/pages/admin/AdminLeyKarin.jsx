@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { leyKarinApi, companiesApi } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
@@ -24,6 +25,8 @@ const STATUS_CFG = {
 }
 
 export default function AdminLeyKarin() {
+  const { user } = useAuth()
+  const isCompanyAdmin = user?.role === 'company_admin'
   const [items, setItems] = useState([])
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
@@ -33,7 +36,10 @@ export default function AdminLeyKarin() {
 
   const load = () => {
     setLoading(true)
-    Promise.all([leyKarinApi.list(), companiesApi?.list ? companiesApi.list() : Promise.resolve({ data: [] })])
+    const companiesP = isCompanyAdmin
+      ? companiesApi.mine().then((r) => ({ data: [r.data] })).catch(() => ({ data: [] }))
+      : companiesApi.list().catch(() => ({ data: [] }))
+    Promise.all([leyKarinApi.list(), companiesP])
       .then(([r1, r2]) => {
         setItems(r1.data || [])
         setCompanies(r2.data || [])
@@ -42,7 +48,7 @@ export default function AdminLeyKarin() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(load, [])
+  useEffect(load, [isCompanyAdmin])
 
   return (
     <div className="space-y-7">

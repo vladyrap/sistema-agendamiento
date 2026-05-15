@@ -93,7 +93,7 @@ export default function App() {
         <Route path="/empresa/ley-karin" element={<LeyKarinLanding />} />
         <Route path="/ley-karin/r/:token" element={<LeyKarinPublicForm />} />
         <Route path="/admin/ley-karin/:id/print" element={
-          <ProtectedRoute roles={['admin', 'consultant']}>
+          <ProtectedRoute roles={['admin', 'consultant', 'company_admin']}>
             <AdminLeyKarinPrint />
           </ProtectedRoute>
         } />
@@ -181,6 +181,7 @@ export default function App() {
           </ProtectedRoute>
         }>
           <Route index element={<CompanyDashboard />} />
+          <Route path="ley-karin" element={<AdminLeyKarin />} />
         </Route>
       </Routes>
       <ChatWidget />

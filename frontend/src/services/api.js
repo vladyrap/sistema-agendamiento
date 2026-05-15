@@ -105,6 +105,7 @@ export const myPatientsApi = {
 export const companiesApi = {
   // Admin
   list:        ()                     => api.get('/companies/'),
+  mine:        ()                     => api.get('/companies/me'),
   get:         (id)                   => api.get(`/companies/${id}`),
   create:      (data)                 => api.post('/companies/', data),
   update:      (id, data)             => api.patch(`/companies/${id}`, data),

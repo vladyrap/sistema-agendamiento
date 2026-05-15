@@ -278,6 +278,24 @@ def remove_member(
 
 # ─── Vista del paciente: ¿tiene beneficio? ──────────────────────────────
 
+@router.get("/me")
+def my_company(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Devuelve la empresa del company_admin actual (singular)."""
+    c = _company_for_user(current_user, db)
+    return {
+        "id": c.id,
+        "name": c.name,
+        "rut": c.rut,
+        "billing_email": c.billing_email,
+        "contact_name": c.contact_name,
+        "contact_phone": c.contact_phone,
+        "is_active": c.is_active,
+    }
+
+
 @router.get("/me/benefit", response_model=MyCompanyBenefit)
 def my_benefit(
     db: Session = Depends(get_db),

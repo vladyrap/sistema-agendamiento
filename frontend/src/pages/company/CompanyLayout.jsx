@@ -1,6 +1,6 @@
 import React from 'react'
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
-import { Home, Users, LogOut, Building2 } from 'lucide-react'
+import { Home, Users, LogOut, Building2, ShieldCheck } from 'lucide-react'
 import NotificationsBell from '../../components/NotificationsBell'
 import { useAuth } from '../../context/AuthContext'
 import { Logo } from '../../components/ui/Logo'
@@ -9,7 +9,8 @@ import { Button } from '../../components/ui/Button'
 import { cn } from '../../lib/cn'
 
 const links = [
-  { to: '/company', icon: Home, label: 'Dashboard', end: true },
+  { to: '/company',           icon: Home,        label: 'Dashboard', end: true },
+  { to: '/company/ley-karin', icon: ShieldCheck, label: 'Ley Karin' },
 ]
 
 export default function CompanyLayout() {

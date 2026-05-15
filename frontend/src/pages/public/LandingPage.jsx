@@ -371,13 +371,13 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Right — feature cards */}
+              {/* Right — feature cards (clickable) */}
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
-                  { icon: FileText,    title: 'Protocolo de prevención', desc: 'Documento legal listo para implementar.', tint: 'from-fuchsia-500/20 to-fuchsia-700/10' },
-                  { icon: ShieldCheck, title: 'SUSESO/ISTAS-21',         desc: 'Cuestionario oficial, anónimo, 5 min.',    tint: 'from-brand-500/20 to-brand-700/10' },
-                  { icon: BarChart3,   title: 'Reporte agregado',        desc: '5 dimensiones de riesgo, listo para DT.',  tint: 'from-cyan-500/20 to-cyan-700/10' },
-                  { icon: Brain,       title: 'Terapia para tu equipo',  desc: 'Derivación inmediata si hay riesgo alto.', tint: 'from-violet-500/20 to-violet-700/10' },
+                  { icon: FileText,    title: 'Protocolo de prevención', desc: 'Documento legal listo para implementar.',  tint: 'from-fuchsia-500/20 to-fuchsia-700/10', to: '/empresa/ley-karin#protocolo' },
+                  { icon: ShieldCheck, title: 'SUSESO/ISTAS-21',         desc: 'Cuestionario oficial, anónimo, 5 min.',     tint: 'from-brand-500/20 to-brand-700/10',     to: '/empresa/ley-karin#cuestionario' },
+                  { icon: BarChart3,   title: 'Reporte agregado',        desc: '5 dimensiones de riesgo, listo para DT.',   tint: 'from-cyan-500/20 to-cyan-700/10',       to: '/empresa/ley-karin#reporte' },
+                  { icon: Brain,       title: 'Terapia para tu equipo',  desc: 'Derivación inmediata si hay riesgo alto.',  tint: 'from-violet-500/20 to-violet-700/10',   to: '/empresa/ley-karin#terapia' },
                 ].map((f, i) => (
                   <motion.div
                     key={f.title}
@@ -385,13 +385,21 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-40px' }}
                     transition={{ duration: 0.4, delay: 0.1 + i * 0.07 }}
-                    className={`rounded-2xl border border-white/10 bg-gradient-to-br ${f.tint} backdrop-blur p-5`}
+                    whileHover={{ y: -4 }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center mb-3">
-                      <f.icon className="w-5 h-5 text-white" strokeWidth={2} />
-                    </div>
-                    <div className="text-sm font-bold text-white">{f.title}</div>
-                    <div className="text-xs text-white/60 mt-1 leading-relaxed">{f.desc}</div>
+                    <Link
+                      to={f.to}
+                      className={`group block h-full rounded-2xl border border-white/10 bg-gradient-to-br ${f.tint} backdrop-blur p-5 transition-all hover:border-white/30 hover:shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)]`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                          <f.icon className="w-5 h-5 text-white" strokeWidth={2} />
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                      </div>
+                      <div className="text-sm font-bold text-white mt-3">{f.title}</div>
+                      <div className="text-xs text-white/60 mt-1 leading-relaxed">{f.desc}</div>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
