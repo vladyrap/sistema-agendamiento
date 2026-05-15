@@ -1,0 +1,17 @@
+* text=auto eol=lf
+
+# Scripts shell siempre LF — si llegan con CRLF a alpine/busybox fallan.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Imagenes y binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

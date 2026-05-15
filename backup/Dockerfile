@@ -8,9 +8,10 @@ RUN apk add --no-cache \
     tzdata \
     ca-certificates \
     findutils \
-    coreutils
+    coreutils \
+    curl
 
-COPY backup.sh restore.sh entrypoint.sh /usr/local/bin/
+COPY backup.sh restore.sh verify_backup.sh entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/*.sh
 
 ENV TZ=UTC
