@@ -50,6 +50,16 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
                     extra={"event_type": event_type, "id": data_id})
         return {"ok": True, "skipped": True}
 
+    # Validar firma HMAC del header x-signature (anti-spoof)
+    x_signature = request.headers.get("x-signature", "")
+    x_request_id = request.headers.get("x-request-id", "")
+    if not payments_service.verify_webhook_signature(
+        x_signature=x_signature, x_request_id=x_request_id, data_id=str(data_id),
+    ):
+        logger.warning("payments.webhook_invalid_signature",
+                       extra={"data_id": data_id, "request_id": x_request_id})
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
     detail = payments_service.fetch_payment(str(data_id))
     if not detail:
         logger.warning("payments.webhook_payment_not_found", extra={"id": data_id})
@@ -168,3 +178,45 @@ def get_payment(payment_id: int, db: Session = Depends(get_db)):
     if not p:
         raise HTTPException(status_code=404, detail="Pago no encontrado")
     return p
+
+
+@router.get("/admin/payments/health", include_in_schema=False)
+def payments_health(db: Session = Depends(get_db)):
+    """Diagnóstico rápido de la integración MercadoPago para el admin.
+
+    No requiere auth de propósito (el admin lo lee desde el panel y no expone secrets).
+    """
+    from app.core.config import settings as app_settings
+    tk = app_settings.MP_ACCESS_TOKEN or ""
+    has_token = bool(tk)
+    is_prod = payments_service.is_production_token()
+    has_secret = bool(app_settings.MP_WEBHOOK_SECRET)
+    public_url = app_settings.APP_PUBLIC_URL
+
+    # Stats de pagos recientes
+    last24h = db.query(Payment).order_by(Payment.id.desc()).limit(20).all()
+    by_status = {}
+    for p in last24h:
+        key = p.status.value if p.status else "unknown"
+        by_status[key] = by_status.get(key, 0) + 1
+
+    issues = []
+    if not has_token:
+        issues.append("MP_ACCESS_TOKEN no configurado: el sistema NO procesará pagos.")
+    if has_token and not is_prod:
+        issues.append("Estás usando un token de SANDBOX (TEST-...). Para cobrar de verdad necesitas un token APP_USR-.")
+    if not has_secret:
+        issues.append("MP_WEBHOOK_SECRET vacío: el webhook acepta requests sin validar firma. Configurá el secret en cuanto puedas.")
+    if public_url.startswith("http://localhost") or "localhost" in public_url:
+        issues.append("APP_PUBLIC_URL apunta a localhost: MercadoPago no podrá llamar el webhook desde Internet.")
+
+    return {
+        "enabled": has_token,
+        "mode": "production" if is_prod else ("sandbox" if has_token else "disabled"),
+        "token_prefix": tk[:8] + "…" if tk else None,
+        "webhook_signature_validation": has_secret,
+        "app_public_url": public_url,
+        "webhook_url": f"{public_url.rstrip('/')}/api/webhooks/mercadopago",
+        "recent_payments_status": by_status,
+        "issues": issues,
+    }

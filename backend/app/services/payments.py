@@ -4,6 +4,8 @@ Si MP_ACCESS_TOKEN no está configurado, el sistema opera sin pagos:
 las citas con consultation_price > 0 igual se crean, pero no se exige pago
 ni se redirige al checkout.
 """
+import hashlib
+import hmac
 import logging
 from typing import Optional, Tuple
 from urllib.parse import urlparse
@@ -15,6 +17,47 @@ logger = logging.getLogger(__name__)
 
 def is_enabled() -> bool:
     return bool(settings.MP_ACCESS_TOKEN)
+
+
+def is_production_token() -> bool:
+    """True si el access token es de producción (APP_USR-...) y no sandbox (TEST-...)."""
+    tk = settings.MP_ACCESS_TOKEN or ""
+    return tk.startswith("APP_USR-") or (tk and not tk.startswith("TEST-"))
+
+
+def verify_webhook_signature(*, x_signature: str, x_request_id: str, data_id: str) -> bool:
+    """Valida la firma HMAC-SHA256 que MercadoPago envía con cada webhook.
+
+    Formato del header x-signature: 'ts=<timestamp>,v1=<hmac_sha256_hex>'
+    Manifest firmado: 'id:<data.id>;request-id:<x-request-id>;ts:<timestamp>;'
+
+    Si MP_WEBHOOK_SECRET no está configurado, devolvemos True para no bloquear
+    el flujo durante el setup inicial — pero loggeamos un WARNING bien visible.
+    """
+    secret = settings.MP_WEBHOOK_SECRET
+    if not secret:
+        logger.warning("payments.webhook_signature_skipped_no_secret")
+        return True
+
+    if not x_signature or not x_request_id or not data_id:
+        logger.warning("payments.webhook_signature_missing_headers",
+                       extra={"has_sig": bool(x_signature), "has_req_id": bool(x_request_id), "has_data": bool(data_id)})
+        return False
+
+    # Parsear "ts=...,v1=..."
+    parts = {}
+    for chunk in x_signature.split(","):
+        if "=" in chunk:
+            k, v = chunk.strip().split("=", 1)
+            parts[k.strip()] = v.strip()
+    ts = parts.get("ts", "")
+    received_hash = parts.get("v1", "")
+    if not ts or not received_hash:
+        return False
+
+    manifest = f"id:{data_id};request-id:{x_request_id};ts:{ts};"
+    expected = hmac.new(secret.encode("utf-8"), manifest.encode("utf-8"), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, received_hash)
 
 
 def _get_sdk():
