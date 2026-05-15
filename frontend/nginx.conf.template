@@ -13,8 +13,9 @@ server {
     }
 
     location /api/ {
-        # Usar una variable obliga a nginx a resolver el hostname en runtime.
-        set $backend_host backend;
+        # BACKEND_HOST viene del entorno (envsubst). Default "backend" en prod;
+        # en staging seteamos BACKEND_HOST=backend-staging para no cruzar stacks.
+        set $backend_host "${BACKEND_HOST}";
         proxy_pass http://$backend_host:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

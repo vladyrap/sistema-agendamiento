@@ -1,0 +1,123 @@
+# Stack de staging — paralelo a prod en el mismo VPS.
+#
+# Comparte la red `miespejo_prod` (creada por docker-compose.prod.yml) para que
+# el Caddy de prod pueda rutear staging.miespejo.cl → frontend-staging.
+# Tiene su propia DB, su propio Redis, su propia secret key y sus propios uploads.
+#
+# Usage:
+#   docker compose -f docker-compose.staging.yml --env-file .env.staging \
+#                  -p miespejo-staging up -d --build
+#
+# IMPORTANTE: requiere que el stack prod ya esté corriendo (la red
+# `miespejo_prod` debe existir).
+
+services:
+  db-staging:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis-staging:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  backend-staging:
+    build: ./backend
+    restart: always
+    environment:
+      ENVIRONMENT: staging
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db-staging
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis-staging
+      REDIS_PORT: 6379
+      CORS_ORIGINS: '["https://${STAGING_DOMAIN_HOST}","http://${STAGING_DOMAIN_HOST}"]'
+      APP_PUBLIC_URL: ${STAGING_APP_PUBLIC_URL:-https://${STAGING_DOMAIN_HOST}}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-25}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      # En staging mandamos los emails a una bandeja de prueba si está seteada,
+      # si no, los logueamos y no enviamos nada real.
+      SMTP_FROM: ${STAGING_SMTP_FROM:-noreply-staging@${STAGING_DOMAIN_HOST}}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-false}
+      # MercadoPago en staging: usar SANDBOX siempre (nunca el token productivo).
+      MP_ACCESS_TOKEN: ${STAGING_MP_ACCESS_TOKEN:-}
+      MP_PUBLIC_KEY: ${STAGING_MP_PUBLIC_KEY:-}
+      MP_WEBHOOK_SECRET: ${STAGING_MP_WEBHOOK_SECRET:-}
+      MP_CURRENCY: ${MP_CURRENCY:-CLP}
+      # Twilio en staging: vacío para no mandar SMS/WhatsApp reales a pacientes
+      # (override con STAGING_TWILIO_* si querés probar envío real).
+      TWILIO_ACCOUNT_SID: ${STAGING_TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${STAGING_TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${STAGING_TWILIO_FROM_NUMBER:-}
+      GEMINI_API_KEY: ${STAGING_GEMINI_API_KEY:-${GEMINI_API_KEY:-}}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - attachments_data_staging:/app/uploads
+    depends_on:
+      db-staging: { condition: service_healthy }
+      redis-staging: { condition: service_healthy }
+
+  worker-staging:
+    build: ./backend
+    restart: always
+    command: ["python", "-m", "app.worker"]
+    environment:
+      TZ: ${APP_TIMEZONE:-America/Santiago}
+      ENVIRONMENT: staging
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db-staging
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis-staging
+      REDIS_PORT: 6379
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-25}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${STAGING_SMTP_FROM:-noreply-staging@${STAGING_DOMAIN_HOST}}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-false}
+      TWILIO_ACCOUNT_SID: ${STAGING_TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${STAGING_TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${STAGING_TWILIO_FROM_NUMBER:-}
+    depends_on:
+      redis-staging: { condition: service_healthy }
+
+  frontend-staging:
+    build: ./frontend
+    restart: always
+    environment:
+      BACKEND_HOST: backend-staging
+    depends_on:
+      - backend-staging
+
+volumes:
+  postgres_data_staging:
+  attachments_data_staging:
+
+# Comparte la red con el stack de prod para que el Caddy global pueda hablar
+# con frontend-staging por nombre.
+networks:
+  default:
+    name: miespejo_prod
+    external: true

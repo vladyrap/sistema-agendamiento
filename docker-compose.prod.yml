@@ -97,6 +97,7 @@ services:
     restart: always
     environment:
       DOMAIN: ${DOMAIN}
+      STAGING_DOMAIN: ${STAGING_DOMAIN:-}
       ACME_EMAIL: ${ACME_EMAIL}
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -167,3 +168,10 @@ volumes:
   caddy_config:
   backup_data:
   attachments_data:
+
+# Named para que el stack de staging (docker-compose.staging.yml) pueda
+# unirse a la misma red y dejar que Caddy le rutee staging.miespejo.cl.
+networks:
+  default:
+    name: miespejo_prod
+

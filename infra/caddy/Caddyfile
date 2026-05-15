@@ -1,25 +1,49 @@
-# Caddy config — auto-HTTPS when DOMAIN is a real hostname,
-# or plain HTTP on :80 when DOMAIN=:80 (IP-only access).
+# Caddy config — auto-HTTPS cuando DOMAIN es un hostname real,
+# o plano en :80 cuando DOMAIN=:80 (acceso por IP).
 {
 	email {$ACME_EMAIL}
 }
 
+# ── Producción ─────────────────────────────────────────────────────────────
 {$DOMAIN} {
 	encode gzip zstd
 
-	# /metrics is internal-only — Prometheus scrapes via the docker network.
+	# /metrics es interno — Prometheus lo scrapea por la docker network.
 	handle /metrics* {
 		respond 404
 	}
 
-	# Everything else is the SPA (the frontend's nginx forwards /api/ → backend).
 	reverse_proxy frontend:80
 
-	# Basic security headers.
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# ── Staging ───────────────────────────────────────────────────────────────
+# Si STAGING_DOMAIN está seteado en .env.prod (ej. staging.miespejo.cl) y el
+# stack staging está corriendo en la misma red `miespejo_prod`, este bloque
+# rutea el subdominio a frontend-staging.
+# Si no está seteado, expandimos a un hostname inválido que no resuelve
+# externamente — el bloque existe pero no recibe tráfico real.
+{$STAGING_DOMAIN:http://staging.disabled.localhost} {
+	encode gzip zstd
+
+	handle /metrics* {
+		respond 404
+	}
+
+	reverse_proxy frontend-staging:80
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
