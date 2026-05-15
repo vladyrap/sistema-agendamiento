@@ -21,10 +21,14 @@ api.interceptors.response.use(
 )
 
 export const authApi = {
-  login:    (data) => api.post('/auth/login', data),
-  register: (data) => api.post('/auth/register', data),
-  me:       ()     => api.get('/auth/me'),
-  updateMe: (data) => api.put('/auth/me', data),
+  login:        (data) => api.post('/auth/login', data),
+  register:     (data) => api.post('/auth/register', data),
+  logout:       ()     => api.post('/auth/logout'),
+  me:           ()     => api.get('/auth/me'),
+  updateMe:     (data) => api.put('/auth/me', data),
+  totpSetup:    ()     => api.post('/auth/2fa/setup'),
+  totpVerify:   (code) => api.post('/auth/2fa/verify',  { code }),
+  totpDisable:  (code) => api.post('/auth/2fa/disable', { code }),
 }
 
 export const chatApi = {

@@ -1,12 +1,34 @@
+import base64
+import io
+from datetime import datetime
+from urllib.parse import quote
+
+import pyotp
+import qrcode
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
-from app.core.security import verify_password, get_password_hash, create_access_token
-from app.models.user import User
-from app.models.user import UserRole
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest
-from app.api.deps import get_current_user, rate_limit
+from app.core.security import (
+    block_token,
+    create_access_token,
+    get_password_hash,
+    verify_password,
+)
+from app.models.user import User, UserRole
+from app.schemas.user import (
+    LoginRequest,
+    Token,
+    TotpCodeRequest,
+    TotpSetupResponse,
+    UserCreate,
+    UserResponse,
+    UserUpdate,
+)
+from app.api.deps import get_current_token_payload, get_current_user, rate_limit
 from app.services.notifications import enqueue
+
+TOTP_ISSUER = "miespejo.cl"
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -78,8 +100,104 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cuenta desactivada")
+
+    # Si el usuario tiene 2FA activo, exigimos código TOTP en este mismo request.
+    # El frontend debe re-enviar el login con `totp_code` cuando recibe 401 totp_required.
+    if user.totp_enabled and user.totp_secret:
+        if not credentials.totp_code:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="totp_required",
+            )
+        totp = pyotp.TOTP(user.totp_secret)
+        if not totp.verify(credentials.totp_code, valid_window=1):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Código TOTP inválido",
+            )
+
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return Token(access_token=token, user=user)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(payload: dict = Depends(get_current_token_payload)):
+    """Revoca el JWT actual hasta su expiración natural."""
+    jti = payload.get("jti")
+    exp = payload.get("exp")
+    if jti and exp:
+        ttl = int(exp - datetime.utcnow().timestamp())
+        block_token(jti, ttl)
+    return None
+
+
+# ─── 2FA TOTP ──────────────────────────────────────────────────────────────
+
+@router.post("/2fa/setup", response_model=TotpSetupResponse)
+def totp_setup(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Genera un secret TOTP nuevo (no lo activa aún). El frontend muestra QR;
+    el usuario confirma con `/auth/2fa/verify` antes de que quede operativo.
+
+    Llamar de nuevo mientras está pendiente regenera el secret.
+    """
+    secret = pyotp.random_base32()
+    current_user.totp_secret = secret
+    current_user.totp_enabled = False
+    db.commit()
+
+    label = quote(f"{TOTP_ISSUER}:{current_user.email}", safe=":@")
+    otpauth_url = (
+        f"otpauth://totp/{label}?secret={secret}&issuer={quote(TOTP_ISSUER)}&algorithm=SHA1&digits=6&period=30"
+    )
+
+    # Generamos el QR server-side para que el secret nunca salga del backend del cliente.
+    qr_img = qrcode.make(otpauth_url, box_size=6, border=2)
+    buf = io.BytesIO()
+    qr_img.save(buf, format="PNG")
+    qr_data_url = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+    return TotpSetupResponse(secret=secret, otpauth_url=otpauth_url, qr_data_url=qr_data_url)
+
+
+@router.post("/2fa/verify", response_model=UserResponse)
+def totp_verify(
+    data: TotpCodeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Confirma el código TOTP y activa 2FA permanentemente."""
+    if not current_user.totp_secret:
+        raise HTTPException(status_code=400, detail="No hay setup pendiente — llamá primero a /2fa/setup")
+    totp = pyotp.TOTP(current_user.totp_secret)
+    if not totp.verify(data.code, valid_window=1):
+        raise HTTPException(status_code=400, detail="Código TOTP inválido")
+    current_user.totp_enabled = True
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/2fa/disable", response_model=UserResponse)
+def totp_disable(
+    data: TotpCodeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Desactiva 2FA. Requiere el código TOTP actual como protección — no basta con
+    estar logueado, porque si te robaron la sesión podrían apagarlo."""
+    if not (current_user.totp_enabled and current_user.totp_secret):
+        raise HTTPException(status_code=400, detail="2FA no está activo")
+    totp = pyotp.TOTP(current_user.totp_secret)
+    if not totp.verify(data.code, valid_window=1):
+        raise HTTPException(status_code=400, detail="Código TOTP inválido")
+    current_user.totp_enabled = False
+    current_user.totp_secret = None
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.get("/me", response_model=UserResponse)

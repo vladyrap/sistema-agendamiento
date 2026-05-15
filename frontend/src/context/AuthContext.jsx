@@ -22,8 +22,10 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const login = async (email, password) => {
-    const { data } = await authApi.login({ email, password })
+  const login = async (email, password, totpCode) => {
+    const payload = { email, password }
+    if (totpCode) payload.totp_code = totpCode
+    const { data } = await authApi.login(payload)
     localStorage.setItem('token', data.access_token)
     localStorage.setItem('user', JSON.stringify(data.user))
     setUser(data.user)
@@ -35,7 +37,9 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Avisamos al backend para revocar el token; si falla seguimos con el cleanup local.
+    try { await authApi.logout() } catch { /* ignore */ }
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)

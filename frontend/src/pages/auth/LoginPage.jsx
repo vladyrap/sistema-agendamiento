@@ -2,16 +2,27 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Mail, Lock, ArrowRight, Sparkles, ShieldCheck, HeartPulse } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Sparkles, ShieldCheck, HeartPulse, KeyRound } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/Button'
 import { Input, Label } from '../../components/ui/Input'
 import { Logo } from '../../components/ui/Logo'
 
+function routeByRole(role) {
+  if (role === 'admin')         return '/admin'
+  if (role === 'doctor')        return '/doctor'
+  if (role === 'receptionist')  return '/reception'
+  if (role === 'company_admin') return '/company'
+  if (role === 'tutor')         return '/tutor'
+  return '/patient'
+}
+
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
+  const [totpCode, setTotpCode] = useState('')
+  const [needsTotp, setNeedsTotp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -20,14 +31,17 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const user = await login(form.email, form.password)
+      const user = await login(form.email, form.password, needsTotp ? totpCode : null)
       toast.success(`Bienvenido, ${user.first_name}`)
-      if (user.role === 'admin')             navigate('/admin')
-      else if (user.role === 'doctor')       navigate('/doctor')
-      else if (user.role === 'receptionist') navigate('/reception')
-      else                                   navigate('/patient')
+      navigate(routeByRole(user.role))
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al iniciar sesión')
+      const detail = err.response?.data?.detail
+      if (detail === 'totp_required') {
+        setNeedsTotp(true)
+        setError('')
+      } else {
+        setError(detail || 'Error al iniciar sesión')
+      }
     } finally {
       setLoading(false)
     }
@@ -71,6 +85,7 @@ export default function LoginPage() {
                 leftIcon={Mail}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                disabled={needsTotp}
               />
             </div>
             <div>
@@ -85,9 +100,43 @@ export default function LoginPage() {
                 leftIcon={Lock}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
+                disabled={needsTotp}
               />
             </div>
-            <Button type="submit" size="lg" className="w-full mt-2" disabled={loading}>
+
+            {needsTotp && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-brand-200 bg-brand-50/60 p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-brand-800">
+                  <ShieldCheck className="w-4 h-4" />
+                  Verificación en dos pasos
+                </div>
+                <p className="text-xs text-ink-600">
+                  Esta cuenta tiene 2FA activo. Abrí tu app autenticadora (Google Authenticator, Authy…) e ingresá el código de 6 dígitos.
+                </p>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  required
+                  autoFocus
+                  placeholder="123456"
+                  leftIcon={KeyRound}
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setNeedsTotp(false); setTotpCode(''); setError('') }}
+                  className="text-xs text-ink-500 hover:text-ink-900"
+                >
+                  ← Cambiar de cuenta
+                </button>
+              </motion.div>
+            )}
+
+            <Button type="submit" size="lg" className="w-full mt-2" disabled={loading || (needsTotp && totpCode.length !== 6)}>
               {loading ? 'Ingresando...' : <>Ingresar <ArrowRight className="w-4 h-4" /></>}
             </Button>
           </form>

@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 import { Input, Label, Textarea } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
+import TwoFactorSection from '../../components/TwoFactorSection'
 import { fadeInUp } from '../../lib/motion'
 import { cn } from '../../lib/cn'
 
@@ -171,6 +172,8 @@ export default function AdminSettings() {
           </Button>
         </div>
       </form>
+
+      <TwoFactorSection />
     </motion.div>
   )
 }

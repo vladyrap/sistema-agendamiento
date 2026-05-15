@@ -40,6 +40,12 @@ class User(Base):
     assigned_doctor_id = Column(Integer, ForeignKey("doctors.id"))
     photo_url = Column(String(500))  # URL pública de la foto de perfil (CDN, pravatar, etc.)
 
+    # 2FA TOTP (Google Authenticator / Authy). `totp_secret` se guarda en claro
+    # protegido por SECRET_KEY del backend; si rotás SECRET_KEY el secret sigue
+    # válido porque TOTP no usa SECRET_KEY, solo es un campo a proteger.
+    totp_secret = Column(String(64), nullable=True)
+    totp_enabled = Column(Boolean, default=False, nullable=False)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

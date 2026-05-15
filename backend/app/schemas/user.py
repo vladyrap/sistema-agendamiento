@@ -44,6 +44,7 @@ class UserResponse(UserBase):
     patient_status: Optional[str] = None
     assigned_doctor_id: Optional[int] = None
     photo_url: Optional[str] = None
+    totp_enabled: bool = False
 
     class Config:
         from_attributes = True
@@ -58,3 +59,14 @@ class Token(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    totp_code: Optional[str] = None
+
+
+class TotpSetupResponse(BaseModel):
+    secret: str
+    otpauth_url: str
+    qr_data_url: str  # data:image/png;base64,...
+
+
+class TotpCodeRequest(BaseModel):
+    code: str

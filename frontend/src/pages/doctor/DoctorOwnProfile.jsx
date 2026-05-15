@@ -10,6 +10,7 @@ import { Input, Label, Textarea } from '../../components/ui/Input'
 import { Avatar } from '../../components/ui/Avatar'
 import { Badge } from '../../components/ui/Badge'
 import { Spinner } from '../../components/ui/Spinner'
+import TwoFactorSection from '../../components/TwoFactorSection'
 import { fadeInUp } from '../../lib/motion'
 
 export default function DoctorOwnProfile() {
@@ -197,6 +198,8 @@ export default function DoctorOwnProfile() {
           </form>
         </Card>
       )}
+
+      <TwoFactorSection />
     </motion.div>
   )
 }

@@ -10,6 +10,7 @@ import { Input, Label, Textarea } from '../../components/ui/Input'
 import { Avatar } from '../../components/ui/Avatar'
 import { Spinner } from '../../components/ui/Spinner'
 import { AttachmentsSection } from '../../components/medical/AttachmentsSection'
+import TwoFactorSection from '../../components/TwoFactorSection'
 import { fadeInUp } from '../../lib/motion'
 
 const emptyMR = {
@@ -236,6 +237,9 @@ export default function PatientProfile() {
         </CardHeader>
         <AttachmentsSection mode="self" />
       </Card>
+
+      {/* Seguridad */}
+      <TwoFactorSection />
     </motion.div>
   )
 }
