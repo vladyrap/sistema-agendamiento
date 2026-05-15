@@ -612,9 +612,15 @@ def get_meeting_link(
     if appt.modality != "online" or not appt.meeting_room_token:
         raise HTTPException(status_code=400, detail="Esta cita no es por videollamada")
 
-    start_dt = datetime.combine(appt.appointment_date, appt.start_time)
-    end_dt = datetime.combine(appt.appointment_date, appt.end_time)
-    now = datetime.utcnow()
+    # Chile local time — la cita está guardada como naive datetime en hora local Chile.
+    # Le agregamos tzinfo para que la comparación contra utcnow() funcione correctamente
+    # sin importar diferencia horaria entre servidor y Chile.
+    from zoneinfo import ZoneInfo
+    tz_cl = ZoneInfo("America/Santiago")
+    tz_utc = ZoneInfo("UTC")
+    start_dt = datetime.combine(appt.appointment_date, appt.start_time).replace(tzinfo=tz_cl)
+    end_dt = datetime.combine(appt.appointment_date, appt.end_time).replace(tzinfo=tz_cl)
+    now = datetime.now(tz_utc)
     open_at = start_dt - timedelta(minutes=15)
     close_at = end_dt + timedelta(minutes=30)
 
