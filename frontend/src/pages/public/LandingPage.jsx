@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import {
   Search, Calendar, Bell, Stethoscope, Brain, HeartPulse, Baby, Eye, Bone,
-  ShieldCheck, Sparkles, ArrowRight, Star, Check, Video,
+  ShieldCheck, Sparkles, ArrowRight, Star, Check, Video, Building2, FileText, BarChart3,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Logo, LogoMark } from '../../components/ui/Logo'
@@ -126,13 +126,11 @@ export default function LandingPage() {
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/60 font-medium">
             <a href="#especialidades" className="hover:text-white transition-colors">Especialidades</a>
+            <a href="#empresas"       className="hover:text-white transition-colors">Empresas</a>
             <a href="#como-funciona"  className="hover:text-white transition-colors">Cómo funciona</a>
             <a href="#testimonios"    className="hover:text-white transition-colors">Testimonios</a>
             <Link to="/regalar" className="hover:text-white transition-colors inline-flex items-center gap-1">
               🎁 Regalar
-            </Link>
-            <Link to="/empresa/ley-karin" className="hover:text-white transition-colors inline-flex items-center gap-1">
-              🏢 Empresas
             </Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -314,6 +312,91 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── EMPRESAS / LEY KARIN ───────────────────────────────────────── */}
+      <section id="empresas" className="relative z-10 py-28">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6 }}
+            className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-fuchsia-950/40 via-ink-950/60 to-brand-950/40 backdrop-blur-xl p-8 sm:p-12 lg:p-16"
+          >
+            {/* Decorative orbs */}
+            <div aria-hidden className="absolute -top-32 -left-20 w-80 h-80 rounded-full bg-fuchsia-500/15 blur-[100px]" />
+            <div aria-hidden className="absolute -bottom-32 -right-10 w-96 h-96 rounded-full bg-brand-500/15 blur-[110px]" />
+
+            <div className="relative grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+              {/* Left — copy */}
+              <div>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-fuchsia-300 mb-5">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Para empresas · Ley 21.643
+                </span>
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-balance text-white leading-tight">
+                  ¿Tu empresa cumple con la{' '}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-300 via-brand-300 to-cyan-300">
+                    Ley Karin
+                  </span>
+                  ?
+                </h2>
+                <p className="text-base md:text-lg text-white/65 mt-5 leading-relaxed text-pretty">
+                  Toda empresa en Chile debe evaluar el riesgo psicosocial de sus trabajadores.
+                  En Calmar te ayudamos a cumplir con el <strong className="text-white/90">cuestionario oficial SUSESO/ISTAS-21</strong>,
+                  un/a <strong className="text-white/90">psicólogo/a organizacional</strong> dedicado/a, y un
+                  <strong className="text-white/90"> plan de acción concreto</strong>. Todo en menos de una semana.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3 mt-8">
+                  <Link to="/empresa/ley-karin">
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-br from-fuchsia-500 via-fuchsia-600 to-brand-700 hover:from-fuchsia-400 hover:to-brand-600 shadow-[0_0_40px_-8px_rgba(217,70,239,0.5)]"
+                    >
+                      Ver propuesta para empresas <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <a href="mailto:hola@miespejo.cl?subject=Consulta%20Ley%20Karin%20-%20Empresa">
+                    <Button size="lg" variant="ghost" className="text-white/80 hover:text-white border border-white/15 bg-white/5 hover:bg-white/10 backdrop-blur">
+                      Hablar con un consultor
+                    </Button>
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-5 mt-7 text-xs text-white/45">
+                  <div className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-fuchsia-300" /> Respuestas 100% anónimas</div>
+                  <div className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-cyan-300" /> Reporte legal listo</div>
+                </div>
+              </div>
+
+              {/* Right — feature cards */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {[
+                  { icon: FileText,    title: 'Protocolo de prevención', desc: 'Documento legal listo para implementar.', tint: 'from-fuchsia-500/20 to-fuchsia-700/10' },
+                  { icon: ShieldCheck, title: 'SUSESO/ISTAS-21',         desc: 'Cuestionario oficial, anónimo, 5 min.',    tint: 'from-brand-500/20 to-brand-700/10' },
+                  { icon: BarChart3,   title: 'Reporte agregado',        desc: '5 dimensiones de riesgo, listo para DT.',  tint: 'from-cyan-500/20 to-cyan-700/10' },
+                  { icon: Brain,       title: 'Terapia para tu equipo',  desc: 'Derivación inmediata si hay riesgo alto.', tint: 'from-violet-500/20 to-violet-700/10' },
+                ].map((f, i) => (
+                  <motion.div
+                    key={f.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.4, delay: 0.1 + i * 0.07 }}
+                    className={`rounded-2xl border border-white/10 bg-gradient-to-br ${f.tint} backdrop-blur p-5`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center mb-3">
+                      <f.icon className="w-5 h-5 text-white" strokeWidth={2} />
+                    </div>
+                    <div className="text-sm font-bold text-white">{f.title}</div>
+                    <div className="text-xs text-white/60 mt-1 leading-relaxed">{f.desc}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
