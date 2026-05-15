@@ -9,7 +9,7 @@ from app.api.routes import (
     auth, specialties, clinics, doctors, appointments, admin, payments, reviews, patients,
     medical_records, patient_notes, doctor_blocks, waitlist, attachments, session_logs, chat, mood,
     homework, tutors, questionnaires, companies, exports, gifts, notifications, external_tests,
-    boletas,
+    boletas, ley_karin,
 )
 
 setup_logging()
@@ -59,6 +59,7 @@ app.include_router(gifts.router, prefix=settings.API_PREFIX)
 app.include_router(notifications.router, prefix=settings.API_PREFIX)
 app.include_router(external_tests.router, prefix=settings.API_PREFIX)
 app.include_router(boletas.router, prefix=settings.API_PREFIX)
+app.include_router(ley_karin.router, prefix=settings.API_PREFIX)
 
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 

@@ -20,6 +20,7 @@ from .company import Company, CompanyMembership
 from .gift_card import GiftCard, UserCredit, CreditTransaction
 from .external_test import ExternalTestResult
 from .boleta import BoletaHonorarios, BoletaStatus
+from .ley_karin import LeyKarinAssessment, LeyKarinResponse, LeyKarinAssessmentStatus
 
 __all__ = [
     "User", "Specialty", "Doctor", "Clinic", "DoctorAvailability",
@@ -32,4 +33,5 @@ __all__ = [
     "GiftCard", "UserCredit", "CreditTransaction",
     "ExternalTestResult",
     "BoletaHonorarios", "BoletaStatus",
+    "LeyKarinAssessment", "LeyKarinResponse", "LeyKarinAssessmentStatus",
 ]

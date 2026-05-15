@@ -56,6 +56,20 @@ export const boletasApi = {
   remove:         (id)               => api.delete(`/boletas/${id}`),
 }
 
+export const leyKarinApi = {
+  instrument:      ()                       => api.get('/ley-karin/instrument'),
+  list:            (params)                 => api.get('/ley-karin/assessments', { params }),
+  get:             (id)                     => api.get(`/ley-karin/assessments/${id}`),
+  create:          (data)                   => api.post('/ley-karin/assessments', data),
+  update:          (id, data)               => api.patch(`/ley-karin/assessments/${id}`, data),
+  activate:        (id)                     => api.post(`/ley-karin/assessments/${id}/activate`),
+  close:           (id)                     => api.post(`/ley-karin/assessments/${id}/close`),
+  remove:          (id)                     => api.delete(`/ley-karin/assessments/${id}`),
+  report:          (id)                     => api.get(`/ley-karin/assessments/${id}/report`),
+  publicForm:      (token)                  => api.get(`/ley-karin/public/${token}`),
+  publicSubmit:    (token, data)            => api.post(`/ley-karin/public/${token}/submit`, data),
+}
+
 export const giftsApi = {
   // Público
   listPackages:  ()                       => api.get('/gifts/packages'),

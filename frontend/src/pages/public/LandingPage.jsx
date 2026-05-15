@@ -131,6 +131,9 @@ export default function LandingPage() {
             <Link to="/regalar" className="hover:text-white transition-colors inline-flex items-center gap-1">
               🎁 Regalar
             </Link>
+            <Link to="/empresa/ley-karin" className="hover:text-white transition-colors inline-flex items-center gap-1">
+              🏢 Empresas
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/login">

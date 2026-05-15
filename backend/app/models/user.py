@@ -12,6 +12,7 @@ class UserRole(str, enum.Enum):
     receptionist = "receptionist"
     tutor = "tutor"
     company_admin = "company_admin"
+    consultant = "consultant"   # Psicólogo/a organizacional / consultor laboral (Ley Karin)
 
 
 # Estados clínicos del paciente. Estado distinto de is_active (que es bloqueo de la cuenta).
